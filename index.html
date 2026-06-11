@@ -1,0 +1,2558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GlucoGuide — Diabetes Management</title>
+<meta name="theme-color" content="#0E7C66">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="GlucoGuide">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F7F6; --surface:#FFFFFF; --surface-2:#EDF2F0;
+  --ink:#13302B; --ink-2:#48605C; --ink-3:#7C918D;
+  --line:#DCE5E2;
+  --primary:#0E7C66; --primary-deep:#0A5C4C; --primary-soft:#E2F1ED;
+  --green:#2F9E63; --green-soft:#E5F4EB;
+  --amber:#D89614; --amber-soft:#FAF1DA;
+  --red:#D5483C;  --red-soft:#FBE7E4;
+  --radius:14px; --radius-sm:10px;
+  --shadow:0 1px 2px rgba(19,48,43,.05),0 6px 18px rgba(19,48,43,.06);
+  --font-display:"Bricolage Grotesque",system-ui,sans-serif;
+  --font-body:"Instrument Sans",system-ui,sans-serif;
+  --font-mono:"Spline Sans Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);background:var(--bg);color:var(--ink);font-size:15.5px;line-height:1.5;min-height:100vh}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid rgba(14,124,102,.45);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-rows:auto 1fr auto;min-height:100vh;max-width:1180px;margin:0 auto}
+@media(min-width:880px){
+  .app{grid-template-columns:232px 1fr;grid-template-rows:1fr;gap:0}
+}
+header.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 6px}
+@media(min-width:880px){header.topbar{display:none}}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:19px;letter-spacing:-.01em}
+.brand-mark{width:30px;height:30px;border-radius:9px;background:var(--primary);display:grid;place-items:center;color:#fff;flex:none}
+.brand-mark svg{width:17px;height:17px}
+.brand small{display:block;font-family:var(--font-body);font-weight:500;font-size:11px;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase}
+
+aside.side{display:none}
+@media(min-width:880px){
+  aside.side{display:flex;flex-direction:column;gap:6px;padding:26px 18px;border-right:1px solid var(--line);position:sticky;top:0;height:100vh}
+  aside.side .brand{margin-bottom:22px;font-size:21px}
+  aside.side .brand-mark{width:36px;height:36px;border-radius:11px}
+}
+.side-link{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--radius-sm);font-weight:500;color:var(--ink-2);text-align:left;width:100%}
+.side-link svg{width:19px;height:19px;flex:none}
+.side-link:hover{background:var(--surface-2)}
+.side-link.active{background:var(--primary-soft);color:var(--primary-deep);font-weight:600}
+.side-foot{margin-top:auto;font-size:12px;color:var(--ink-3);line-height:1.45;padding:0 4px}
+
+main{padding:8px 20px 110px;min-width:0}
+@media(min-width:880px){main{padding:30px 36px 60px}}
+
+nav.bottom{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 8px calc(8px + env(safe-area-inset-bottom));z-index:40}
+@media(min-width:880px){nav.bottom{display:none}}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--ink-3);padding:6px 10px;border-radius:10px;letter-spacing:.02em}
+.nav-btn svg{width:21px;height:21px}
+.nav-btn.active{color:var(--primary-deep)}
+.nav-btn.nav-log{position:relative;top:-14px}
+.nav-btn.nav-log .fab{width:48px;height:48px;border-radius:16px;background:var(--primary);color:#fff;display:grid;place-items:center;box-shadow:0 6px 16px rgba(14,124,102,.35)}
+.nav-btn.nav-log .fab svg{width:23px;height:23px}
+
+.view{display:none;animation:fadein .25s ease}
+.view.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+h1.page-title{font-family:var(--font-display);font-weight:700;font-size:clamp(22px,3.4vw,28px);letter-spacing:-.015em;margin:10px 0 2px}
+.page-sub{color:var(--ink-2);font-size:14px;margin-bottom:20px}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+.card h2{font-family:var(--font-display);font-size:16.5px;font-weight:600;letter-spacing:-.01em;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card h2 .hint{font-family:var(--font-body);font-size:12px;font-weight:500;color:var(--ink-3)}
+.grid-2{display:grid;gap:16px}
+@media(min-width:740px){.grid-2{grid-template-columns:1fr 1fr}}
+
+/* ---------- meter readout (signature) ---------- */
+.readout{background:linear-gradient(160deg,#10342E,#0A5C4C 130%);color:#fff;border:none;position:relative;overflow:hidden}
+.readout::after{content:"";position:absolute;inset:0;background:radial-gradient(420px 180px at 85% -20%,rgba(255,255,255,.14),transparent 70%);pointer-events:none}
+.readout .ro-label{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.65)}
+.readout .ro-main{display:flex;align-items:baseline;gap:12px;margin:6px 0 2px;flex-wrap:wrap}
+.readout .ro-value{font-family:var(--font-mono);font-size:clamp(52px,9vw,72px);font-weight:600;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.readout .ro-unit{font-family:var(--font-mono);font-size:15px;color:rgba(255,255,255,.7)}
+.readout .ro-arrow{font-size:30px;line-height:1;font-family:var(--font-mono)}
+.readout .ro-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:13px;color:rgba(255,255,255,.75)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.pill.in{background:rgba(86,212,143,.22);color:#9FE9C0}
+.pill.high{background:rgba(244,196,86,.2);color:#F6D88C}
+.pill.low{background:rgba(255,138,125,.22);color:#FFB3A8}
+.readout .ro-empty{font-size:14px;color:rgba(255,255,255,.8);margin-top:8px}
+.readout .btn-light{margin-top:14px;background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25);padding:8px 16px;border-radius:10px;font-weight:600;font-size:13.5px}
+.readout .btn-light:hover{background:rgba(255,255,255,.22)}
+
+/* time in range strip */
+.tir-strip{display:flex;height:14px;border-radius:99px;overflow:hidden;margin:10px 0 8px;background:var(--surface-2)}
+.tir-strip span{height:100%}
+.tir-strip .s-low{background:var(--red)} .tir-strip .s-in{background:var(--green)} .tir-strip .s-high{background:var(--amber)}
+.tir-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
+.tir-legend b{font-family:var(--font-mono);font-weight:600;color:var(--ink)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px}
+.dot.low{background:var(--red)}.dot.in{background:var(--green)}.dot.high{background:var(--amber)}
+
+/* stats */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.stat{background:var(--surface-2);border-radius:var(--radius-sm);padding:12px}
+.stat .s-label{font-size:11.5px;font-weight:600;color:var(--ink-3);letter-spacing:.05em;text-transform:uppercase}
+.stat .s-value{font-family:var(--font-mono);font-size:21px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+.stat .s-sub{font-size:11.5px;color:var(--ink-3)}
+
+/* forms */
+.tabs{display:flex;gap:6px;background:var(--surface-2);padding:5px;border-radius:12px;margin-bottom:18px;overflow-x:auto}
+.tab{flex:1;padding:8px 12px;border-radius:9px;font-weight:600;font-size:13.5px;color:var(--ink-2);white-space:nowrap}
+.tab.active{background:var(--surface);color:var(--primary-deep);box-shadow:var(--shadow)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);font-size:15px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(14,124,102,.13)}
+.field textarea{resize:vertical;min-height:64px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:flex;flex-wrap:wrap;gap:7px}
+.seg button{padding:8px 13px;border:1.5px solid var(--line);border-radius:99px;font-size:13px;font-weight:600;color:var(--ink-2);background:var(--surface)}
+.seg button.active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary-deep)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--radius-sm);font-weight:600;font-size:15px}
+.btn-primary{background:var(--primary);color:#fff;width:100%}
+.btn-primary:hover{background:var(--primary-deep)}
+.btn-ghost{background:var(--surface-2);color:var(--ink)}
+.btn-danger{background:var(--red-soft);color:var(--red)}
+.btn-sm{padding:8px 14px;font-size:13.5px;width:auto}
+
+/* alert banners */
+.banner{display:flex;gap:12px;align-items:flex-start;border-radius:var(--radius-sm);padding:13px 15px;font-size:14px;margin-bottom:16px}
+.banner svg{flex:none;width:20px;height:20px;margin-top:1px}
+.banner.low{background:var(--red-soft);color:#8C271E}
+.banner.high{background:var(--amber-soft);color:#7A5408}
+.banner b{display:block;margin-bottom:2px}
+
+/* entries list */
+.entry{display:flex;align-items:center;gap:13px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.entry:last-child{border-bottom:none}
+.entry-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none}
+.entry-icon svg{width:18px;height:18px}
+.ei-glucose{background:var(--primary-soft);color:var(--primary-deep)}
+.ei-med{background:#E8EAF8;color:#4453B8}
+.ei-meal{background:var(--amber-soft);color:#9A6B07}
+.ei-activity{background:var(--green-soft);color:#1F7A48}
+.entry-body{flex:1;min-width:0}
+.entry-title{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.entry-title .val{font-family:var(--font-mono)}
+.entry-sub{font-size:12.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+.badge.in{background:var(--green-soft);color:#1F7A48}
+.badge.high{background:var(--amber-soft);color:#9A6B07}
+.badge.low{background:var(--red-soft);color:var(--red)}
+.entry-del{color:var(--ink-3);padding:7px;border-radius:8px}
+.entry-del:hover{background:var(--red-soft);color:var(--red)}
+.entry-del svg{width:16px;height:16px;display:block}
+.empty{padding:26px 10px;text-align:center;color:var(--ink-3);font-size:14px}
+.empty b{display:block;color:var(--ink-2);font-family:var(--font-display);font-size:15.5px;margin-bottom:3px}
+
+/* charts */
+.chart-wrap{width:100%;overflow:hidden}
+.chart-wrap svg{width:100%;height:auto;display:block}
+.range-seg{display:flex;gap:6px}
+.range-seg button{padding:5px 12px;border-radius:99px;font-size:12.5px;font-weight:600;color:var(--ink-2);border:1.5px solid var(--line)}
+.range-seg button.active{background:var(--ink);border-color:var(--ink);color:#fff}
+.donut-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.donut-center{font-family:var(--font-mono);font-weight:600}
+
+/* meds */
+.med-check{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid var(--line)}
+.med-check:last-child{border-bottom:none}
+.check-btn{width:26px;height:26px;border-radius:9px;border:2px solid var(--line);display:grid;place-items:center;flex:none;color:#fff}
+.check-btn.done{background:var(--green);border-color:var(--green)}
+.check-btn svg{width:15px;height:15px}
+.med-check .mc-body{flex:1}
+.med-check .mc-name{font-weight:600;font-size:14.5px}
+.med-check .mc-name.struck{text-decoration:line-through;color:var(--ink-3)}
+.med-check .mc-sub{font-size:12.5px;color:var(--ink-3)}
+.med-check time{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-2)}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:.3s ease;z-index:60;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media(min-width:880px){#toast{bottom:30px}}
+
+.disclaimer{font-size:12px;color:var(--ink-3);line-height:1.5;margin-top:20px;padding:0 4px}
+table.ctx-table{width:100%;border-collapse:collapse;font-size:13.5px}
+table.ctx-table th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);padding:6px 4px;border-bottom:1px solid var(--line)}
+table.ctx-table td{padding:8px 4px;border-bottom:1px solid var(--line)}
+table.ctx-table td.num{font-family:var(--font-mono);font-weight:500}
+table.ctx-table tr:last-child td{border-bottom:none}
+
+/* ---------- plan view ---------- */
+.day-tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;margin-bottom:6px;-webkit-overflow-scrolling:touch}
+.day-tab{flex:none;padding:8px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;font-size:13px;color:var(--ink-2)}
+.day-tab.active{background:var(--ink);border-color:var(--ink);color:#fff}
+.day-tab.today::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-left:7px;vertical-align:middle}
+.plan-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.plan-theme{font-size:13.5px;color:var(--ink-2);max-width:520px}
+.focus-chip{background:var(--primary-soft);color:var(--primary-deep);font-weight:700;font-size:12.5px;padding:6px 12px;border-radius:99px;white-space:nowrap}
+.adh-bar{height:10px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:8px 0 6px}
+.adh-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--green));border-radius:99px;transition:width .35s ease}
+.adh-line{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-2)}
+.adh-line b{font-family:var(--font-mono)}
+.sched-item{display:flex;gap:12px;padding:11px 2px;border-bottom:1px solid var(--line);align-items:flex-start}
+.sched-item:last-child{border-bottom:none}
+.sched-time{font-family:var(--font-mono);font-size:12px;color:var(--ink-2);width:62px;flex:none;padding-top:4px;font-weight:500}
+.sched-body{flex:1;min-width:0}
+.sched-title{font-weight:600;font-size:14.5px}
+.sched-detail{font-size:12.5px;color:var(--ink-3);line-height:1.45}
+.sched-item.done .sched-title{color:var(--ink-3);text-decoration:line-through}
+.sched-item.skipped .sched-title{color:var(--red);text-decoration:line-through;text-decoration-color:rgba(213,72,60,.5)}
+.sched-actions{display:flex;gap:6px;flex:none;padding-top:2px}
+.skip-btn{width:26px;height:26px;border-radius:9px;border:2px solid var(--line);display:grid;place-items:center;color:var(--ink-3);flex:none}
+.skip-btn svg{width:13px;height:13px}
+.skip-btn.skipped{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.cat-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:2px}
+.cat-meal{background:var(--amber-soft);color:#9A6B07}.cat-gym{background:var(--green-soft);color:#1F7A48}
+.cat-walk{background:#E8EAF8;color:#4453B8}.cat-chk{background:var(--primary-soft);color:var(--primary-deep)}
+details.fold{border:1px solid var(--line);border-radius:var(--radius-sm);margin-bottom:10px;background:var(--surface)}
+details.fold summary{padding:12px 14px;font-weight:600;font-size:14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+details.fold summary::-webkit-details-marker{display:none}
+details.fold summary::after{content:"+";font-family:var(--font-mono);color:var(--ink-3);font-size:16px}
+details.fold[open] summary::after{content:"–"}
+details.fold .fold-body{padding:0 14px 14px;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.fold-body ul{padding-left:18px;margin:6px 0}
+.fold-body li{margin-bottom:3px}
+.fold-body h4{font-size:13px;margin:10px 0 4px;color:var(--ink)}
+.recipe-cols{display:grid;gap:14px}
+@media(min-width:680px){.recipe-cols{grid-template-columns:1fr 1fr}}
+.week-bars{display:flex;gap:8px;align-items:flex-end;height:120px;padding-top:6px}
+.wb{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.wb .bar{width:100%;max-width:42px;border-radius:8px 8px 4px 4px;background:var(--primary);min-height:3px}
+.wb .bar.low-adh{background:var(--amber)}
+.wb .bar.empty-adh{background:var(--surface-2)}
+.wb .lbl{font-size:10.5px;color:var(--ink-3);font-weight:600}
+.wb .pct{font-family:var(--font-mono);font-size:11px;color:var(--ink-2)}
+.next-up{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.next-up:last-child{border-bottom:none}
+.next-up time{font-family:var(--font-mono);font-size:12px;color:var(--ink-2);width:60px;flex:none}
+.gear-btn{padding:8px;border-radius:10px;color:var(--ink-2);display:grid;place-items:center}
+.gear-btn svg{width:21px;height:21px}
+
+/* ---------- saved day records & report ---------- */
+.rec-item{padding:10px 2px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
+.rec-item:last-child{border-bottom:none}
+.rec-date{font-family:var(--font-mono);font-size:12px;color:var(--ink-2);width:64px;flex:none;padding-top:3px}
+.rec-body{flex:1;min-width:0;font-size:13.5px}
+.rec-pct{font-family:var(--font-mono);font-weight:600}
+.rec-missed{color:var(--red);font-size:12.5px}
+.rec-note{color:var(--ink-3);font-size:12.5px;font-style:italic}
+.saved-flag{display:inline-flex;align-items:center;gap:5px;background:var(--green-soft);color:#1F7A48;font-weight:700;font-size:12px;padding:4px 10px;border-radius:99px}
+#printReport{display:none}
+@media print{
+  body{background:#fff}
+  .app,#toast{display:none!important}
+  #printReport{display:block;font-family:Georgia,serif;color:#111;font-size:13px;line-height:1.5;padding:10px}
+  #printReport h1{font-size:20px;margin:0 0 2px}
+  #printReport h2{font-size:14px;margin:18px 0 6px;border-bottom:1.5px solid #333;padding-bottom:3px}
+  #printReport table{width:100%;border-collapse:collapse;font-size:12px}
+  #printReport th,#printReport td{border:1px solid #999;padding:4px 7px;text-align:left}
+  #printReport .meta{color:#444;font-size:12px}
+}
+.learn-links a{color:var(--primary-deep);font-weight:600;text-decoration:underline}
+.learn-links li{margin-bottom:6px}
+.urgent-box{background:var(--red-soft);border-radius:var(--radius-sm);padding:13px 15px;font-size:13.5px;color:#8C271E;line-height:1.55;margin-bottom:14px}
+.urgent-box b{display:block;margin-bottom:3px}
+
+/* ---------- onboarding ---------- */
+#onboard{position:fixed;inset:0;background:var(--bg);z-index:100;overflow-y:auto;display:none}
+#onboard.show{display:block}
+.ob-wrap{max-width:520px;margin:0 auto;padding:34px 22px 60px}
+.ob-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:22px;margin-bottom:26px}
+.ob-logo .brand-mark{width:38px;height:38px;border-radius:12px}
+.ob-dots{display:flex;gap:7px;margin-bottom:22px}
+.ob-dots span{height:6px;flex:1;border-radius:99px;background:var(--line)}
+.ob-dots span.on{background:var(--primary)}
+.ob-step{display:none}
+.ob-step.active{display:block;animation:fadein .25s ease}
+.ob-step h1{font-family:var(--font-display);font-size:24px;letter-spacing:-.015em;margin-bottom:6px}
+.ob-step .ob-sub{color:var(--ink-2);font-size:14px;margin-bottom:20px}
+.ob-nav{display:flex;gap:10px;margin-top:24px}
+.ob-nav .btn{flex:1}
+.seg.multi button.active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary-deep)}
+.terms-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;font-size:13px;color:var(--ink-2);line-height:1.55;max-height:240px;overflow-y:auto;margin-bottom:14px}
+.agree-row{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.agree-row input{width:20px;height:20px;margin-top:1px}
+
+/* ---------- steps tracker ---------- */
+.steps-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.steps-ring{flex:none}
+.steps-form{flex:1;min-width:200px}
+.diary-filters{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
+.diary-filters button{padding:5px 12px;border-radius:99px;font-size:12.5px;font-weight:600;color:var(--ink-2);border:1.5px solid var(--line)}
+.diary-filters button.active{background:var(--ink);border-color:var(--ink);color:#fff}
+.diary-day{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);padding:12px 2px 4px;border-bottom:1px solid var(--line)}
+.gs-item{display:flex;align-items:center;gap:11px;padding:9px 2px;font-size:14px}
+.gs-item .check-btn{pointer-events:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar (desktop) -->
+  <aside class="side">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7s6.5 7 6.5 12a6.5 6.5 0 1 1-13 0c0-5 6.5-12 6.5-12z"/></svg></div>
+      <div>GlucoGuide<small>Diabetes care</small></div>
+    </div>
+    <button class="side-link" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</button>
+    <button class="side-link" data-nav="log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Log entry</button>
+    <button class="side-link" data-nav="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18M8.5 14.5l2.2 2.2 4.8-4.7"/></svg>My plan</button>
+    <button class="side-link" data-nav="learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>Learn</button>
+    <button class="side-link" data-nav="trends"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 6-8"/><path d="M3 21h18"/></svg>Trends</button>
+    <button class="side-link" data-nav="meds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M8.5 15.5l7-7"/></svg>Medications</button>
+    <button class="side-link" data-nav="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06A2 2 0 1 1 7.07 4.24l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>Settings</button>
+    <div class="side-foot">GlucoGuide is a self-tracking tool, not medical advice. Review decisions with your care team.</div>
+  </aside>
+
+  <div>
+    <!-- Mobile top bar -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7s6.5 7 6.5 12a6.5 6.5 0 1 1-13 0c0-5 6.5-12 6.5-12z"/></svg></div>
+        <div>GlucoGuide</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div id="topDate" style="font-size:12.5px;color:var(--ink-3);font-weight:500"></div>
+        <button class="gear-btn" data-nav="learn" aria-label="Health library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg></button>
+        <button class="gear-btn" data-nav="settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg></button>
+      </div>
+    </header>
+
+    <main>
+      <!-- ============ DASHBOARD ============ -->
+      <section class="view active" id="view-dashboard">
+        <h1 class="page-title" id="greeting">Hello</h1>
+        <p class="page-sub" id="dashDate"></p>
+
+        <div id="alertSlot"></div>
+
+        <div class="card readout" id="readoutCard"></div>
+
+        <div class="card" id="dashPlanCard">
+          <h2>Today's plan <span class="hint"><button class="btn btn-ghost btn-sm" data-nav="plan">Open plan</button></span></h2>
+          <div id="dashPlan"></div>
+        </div>
+
+        <div class="card">
+          <h2>Daily record <span class="hint">saved from My Plan</span></h2>
+          <div id="dashDayReport"></div>
+        </div>
+
+        <div class="card" id="gsCard" hidden>
+          <h2>Getting started</h2>
+          <div id="gsList"></div>
+        </div>
+
+        <div class="card">
+          <h2>Steps &amp; activity <span class="hint" id="stepGoalHint"></span></h2>
+          <div class="steps-row">
+            <div class="steps-ring" id="stepsRing"></div>
+            <div class="steps-form">
+              <div class="field" style="margin-bottom:10px"><label for="stepsInput">Today's total steps <span style="font-weight:400;color:var(--ink-3)">(from your watch / phone)</span></label><input type="number" id="stepsInput" inputmode="numeric" min="0" placeholder="e.g. 6400"></div>
+              <button class="btn btn-primary btn-sm" id="saveSteps" style="width:100%">Save steps</button>
+              <button class="btn btn-ghost btn-sm" id="hcSync" hidden style="width:100%;margin-top:8px">⌚ Sync from Health Connect (watch)</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-ghost" id="shareSummary" style="width:100%;margin-bottom:16px">📤 Share today's summary with family</button>
+
+        <div class="grid-2">
+          <div class="card">
+            <h2>Time in range <span class="hint">last 14 days</span></h2>
+            <div id="tirBlock"></div>
+          </div>
+          <div class="card">
+            <h2>Today at a glance</h2>
+            <div class="stat-grid" id="todayStats"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Last 7 days <span class="hint" id="chartHint"></span></h2>
+          <div class="chart-wrap" id="miniChart"></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h2>Today's medications <span class="hint"><button class="btn btn-ghost btn-sm" data-nav="meds">Manage</button></span></h2>
+            <div id="dashMeds"></div>
+          </div>
+          <div class="card">
+            <h2>Recent entries <span class="hint"><button class="btn btn-ghost btn-sm" data-nav="log">Add</button></span></h2>
+            <div id="dashRecent"></div>
+          </div>
+        </div>
+
+        <p class="disclaimer">GlucoGuide helps you record and review your own data. It does not diagnose, treat, or replace guidance from your doctor or diabetes educator. If you feel unwell, or readings are very low or very high, follow your care plan and seek medical help.</p>
+      </section>
+
+      <!-- ============ LOG ============ -->
+      <section class="view" id="view-log">
+        <h1 class="page-title">Log an entry</h1>
+        <p class="page-sub">Glucose, medication, meals, and activity all in one place.</p>
+        <button id="voiceBtn" class="btn btn-ghost" hidden style="width:100%;margin-bottom:14px">🎤 Log with voice — say "sugar 145" or "walked 30 minutes"</button>
+
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-logtab="glucose" role="tab">Glucose</button>
+          <button class="tab" data-logtab="med" role="tab">Medication</button>
+          <button class="tab" data-logtab="meal" role="tab">Meal</button>
+          <button class="tab" data-logtab="activity" role="tab">Activity</button>
+          <button class="tab" data-logtab="vitals" role="tab">Vitals</button>
+        </div>
+
+        <div class="card" id="logtab-glucose">
+          <div class="field">
+            <label for="gValue">Blood glucose (<span class="unitLabel">mg/dL</span>)</label>
+            <input type="number" id="gValue" inputmode="decimal" step="any" min="1" placeholder="e.g. 112">
+          </div>
+          <div class="field">
+            <label>Reading context</label>
+            <div class="seg" id="gContext">
+              <button data-v="Fasting" class="active">Fasting</button>
+              <button data-v="Before meal">Before meal</button>
+              <button data-v="After meal">After meal</button>
+              <button data-v="Bedtime">Bedtime</button>
+              <button data-v="Night">Night</button>
+              <button data-v="Other">Other</button>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="gDate">Date</label><input type="date" id="gDate"></div>
+            <div class="field"><label for="gTime">Time</label><input type="time" id="gTime"></div>
+          </div>
+          <div class="field"><label for="gNotes">Notes <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label><textarea id="gNotes" placeholder="Felt shaky, big lunch, stressful day…"></textarea></div>
+          <button class="btn btn-primary" id="saveGlucose">Save reading</button>
+        </div>
+
+        <div class="card" id="logtab-med" hidden>
+          <div class="field">
+            <label for="dMed">Medication</label>
+            <select id="dMed"></select>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="dDose">Dose</label><input type="number" id="dDose" inputmode="decimal" step="any" min="0" placeholder="e.g. 10"></div>
+            <div class="field"><label for="dUnit">Unit</label>
+              <select id="dUnit"><option>units</option><option>mg</option><option>mL</option><option>tablet(s)</option></select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="dDate">Date</label><input type="date" id="dDate"></div>
+            <div class="field"><label for="dTime">Time</label><input type="time" id="dTime"></div>
+          </div>
+          <button class="btn btn-primary" id="saveDose">Save dose</button>
+          <p style="font-size:12.5px;color:var(--ink-3);margin-top:10px">Add medications to this list from the <button data-nav="meds" style="color:var(--primary-deep);font-weight:600;text-decoration:underline">Medications</button> page.</p>
+        </div>
+
+        <div class="card" id="logtab-meal" hidden>
+          <div class="field"><label for="mName">What did you eat?</label><input type="text" id="mName" placeholder="e.g. Chicken salad with rice"></div>
+          <div class="field-row">
+            <div class="field"><label for="mCarbs">Carbohydrates (g) <button id="aiCarb" style="color:var(--primary-deep);font-weight:700;font-size:12px;margin-left:6px">✨ AI estimate</button></label><input type="number" id="mCarbs" inputmode="decimal" min="0" step="any" placeholder="e.g. 45"></div>
+            <div class="field"><label for="mType">Meal</label>
+              <select id="mType"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="mDate">Date</label><input type="date" id="mDate"></div>
+            <div class="field"><label for="mTime">Time</label><input type="time" id="mTime"></div>
+          </div>
+          <div class="field"><label for="mPhoto">Photo of your plate <span style="font-weight:400;color:var(--ink-3)">(optional)</span></label><input type="file" id="mPhoto" accept="image/*" capture="environment"></div>
+          <button class="btn btn-primary" id="saveMeal">Save meal</button>
+        </div>
+
+        <div class="card" id="logtab-activity" hidden>
+          <div class="field"><label for="aType">Activity</label><input type="text" id="aType" placeholder="e.g. Walking, cycling, gym"></div>
+          <div class="field-row">
+            <div class="field"><label for="aMin">Duration (minutes)</label><input type="number" id="aMin" inputmode="numeric" min="1" placeholder="e.g. 30"></div>
+            <div class="field"><label for="aIntensity">Intensity</label>
+              <select id="aIntensity"><option>Light</option><option selected>Moderate</option><option>Vigorous</option></select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="aDate">Date</label><input type="date" id="aDate"></div>
+            <div class="field"><label for="aTime">Time</label><input type="time" id="aTime"></div>
+          </div>
+          <button class="btn btn-primary" id="saveActivity">Save activity</button>
+        </div>
+
+        <div class="card" id="logtab-vitals" hidden>
+          <p style="font-size:13px;color:var(--ink-2);margin-bottom:12px">Fill in whichever you measured — each saves as its own entry. These appear in your doctor report.</p>
+          <div class="field-row">
+            <div class="field"><label for="vWeight">Weight (kg)</label><input type="number" id="vWeight" inputmode="decimal" step="any" min="1" placeholder="e.g. 78.5"></div>
+            <div class="field"><label for="vA1c">HbA1c lab result (%)</label><input type="number" id="vA1c" inputmode="decimal" step="any" min="2" max="20" placeholder="e.g. 7.2"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="vSys">Blood pressure — systolic</label><input type="number" id="vSys" inputmode="numeric" min="40" placeholder="e.g. 120"></div>
+            <div class="field"><label for="vDia">Blood pressure — diastolic</label><input type="number" id="vDia" inputmode="numeric" min="20" placeholder="e.g. 80"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="vDate">Date</label><input type="date" id="vDate"></div>
+            <div class="field"><label for="vTime">Time</label><input type="time" id="vTime"></div>
+          </div>
+          <button class="btn btn-primary" id="saveVitals">Save vitals</button>
+          <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
+          <h2 style="font-family:var(--font-display);font-size:15px;margin-bottom:8px">Lab results</h2>
+          <p style="font-size:12.5px;color:var(--ink-2);margin-bottom:12px">Record results from your lab reports — they build long-term trends and appear on your doctor report.</p>
+          <div class="field-row">
+            <div class="field"><label for="labType">Test</label><select id="labType"></select></div>
+            <div class="field"><label for="labValue">Result <span id="labUnit" style="font-weight:400;color:var(--ink-3)"></span></label><input type="number" id="labValue" inputmode="decimal" step="any" placeholder="value"></div>
+          </div>
+          <button class="btn btn-primary" id="saveLab">Save lab result</button>
+        </div>
+
+        <div class="card">
+          <h2>Diary <span class="hint">search all your entries</span></h2>
+          <div class="field" style="margin-bottom:4px"><input type="search" id="diarySearch" placeholder="Search notes, meals, meds…"></div>
+          <div class="diary-filters" id="diaryFilters">
+            <button data-f="all" class="active">All</button>
+            <button data-f="glucose">Glucose</button>
+            <button data-f="med">Meds</button>
+            <button data-f="meal">Meals</button>
+            <button data-f="activity">Activity</button>
+            <button data-f="vital">Vitals</button>
+            <button data-f="lab">Labs</button>
+          </div>
+          <div id="logRecent"></div>
+        </div>
+      </section>
+
+      <!-- ============ TRENDS ============ -->
+      <section class="view" id="view-trends">
+        <h1 class="page-title">Trends &amp; reports</h1>
+        <p class="page-sub">Patterns across your readings, ranges, and contexts.</p>
+
+        <div class="card">
+          <h2>Glucose over time
+            <span class="range-seg" id="rangeSeg">
+              <button data-days="7" class="active">7d</button>
+              <button data-days="14">14d</button>
+              <button data-days="30">30d</button>
+              <button data-days="90">90d</button>
+            </span>
+          </h2>
+          <div class="chart-wrap" id="trendChart"></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h2>Time in range <span class="hint" id="tirRangeHint"></span></h2>
+            <div class="donut-row" id="trendDonut"></div>
+          </div>
+          <div class="card">
+            <h2>Statistics <span class="hint" id="statRangeHint"></span></h2>
+            <div class="stat-grid" id="trendStats"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Vitals &amp; labs <span class="hint">latest values</span></h2>
+          <div class="stat-grid" id="vitalsStats"></div>
+          <div id="labsLatest" style="margin-top:12px"></div>
+        </div>
+
+        <div class="card">
+          <h2>Steps <span class="hint">last 7 days</span></h2>
+          <div class="week-bars" id="stepsWeek"></div>
+        </div>
+
+        <div class="card">
+          <h2>Plan adherence <span class="hint">last 7 days</span></h2>
+          <div class="week-bars" id="adhWeek"></div>
+          <div class="stat-grid" id="adhStats" style="margin-top:14px"></div>
+        </div>
+
+        <div class="card">
+          <h2>Averages by context <span class="hint" id="ctxRangeHint"></span></h2>
+          <div id="ctxTable"></div>
+        </div>
+      </section>
+
+      <!-- ============ MEDS ============ -->
+      <section class="view" id="view-meds">
+        <h1 class="page-title">Medications</h1>
+        <p class="page-sub">Your daily plan and dose history.</p>
+
+        <div class="card">
+          <h2>Today's checklist</h2>
+          <div id="medChecklist"></div>
+        </div>
+
+        <div class="card">
+          <h2>Add a medication</h2>
+          <div class="field"><label for="medName">Name</label><input type="text" id="medName" placeholder="e.g. Metformin, Lantus"></div>
+          <div class="field-row">
+            <div class="field"><label for="medType">Type</label>
+              <select id="medType"><option>Oral medication</option><option>Insulin (basal)</option><option>Insulin (bolus)</option><option>GLP-1 / injectable</option><option>Other</option></select>
+            </div>
+            <div class="field"><label for="medDose">Standard dose</label><input type="text" id="medDose" placeholder="e.g. 500 mg or 12 units"></div>
+          </div>
+          <div class="field"><label for="medTimes">Scheduled times <span style="font-weight:400;color:var(--ink-3)">(comma-separated, e.g. 08:00, 20:00)</span></label><input type="text" id="medTimes" placeholder="08:00, 20:00"></div>
+          <button class="btn btn-primary" id="addMed">Add medication</button>
+        </div>
+
+        <div class="card">
+          <h2>Your medications</h2>
+          <div id="medList"></div>
+        </div>
+      </section>
+
+      <!-- ============ PLAN ============ -->
+      <section class="view" id="view-plan">
+        <h1 class="page-title">My 7-day plan</h1>
+        <p class="page-sub">Your vegetarian meal + gym schedule. Check off each item as you follow it — or mark it skipped to keep an honest record.</p>
+
+        <div class="day-tabs" id="dayTabs"></div>
+
+        <div class="card">
+          <div class="plan-head">
+            <div>
+              <h2 style="margin-bottom:2px" id="planDayTitle"></h2>
+              <div class="plan-theme" id="planTheme"></div>
+            </div>
+            <span class="focus-chip" id="planFocus"></span>
+          </div>
+          <div class="adh-bar"><span id="planAdhFill" style="width:0%"></span></div>
+          <div class="adh-line"><span id="planAdhText"></span><span id="planAdhPct"></span></div>
+        </div>
+
+        <div class="card">
+          <h2>Daily schedule <span class="hint">tap ✓ done · ✕ skipped</span></h2>
+          <div id="planSchedule"></div>
+        </div>
+
+        <div class="card" id="saveDayCard">
+          <h2>Save this day's record <span class="hint" id="savedFlagSlot"></span></h2>
+          <p style="font-size:13px;color:var(--ink-2);margin-bottom:10px">At the end of the day, save your record permanently: adherence %, everything you followed, and everything you missed or skipped. It appears on your Home page and in your doctor report.</p>
+          <div class="field"><label for="dayNote">Note for the day <span style="font-weight:400;color:var(--ink-3)">(optional — how you felt, what got in the way)</span></label><textarea id="dayNote" placeholder="e.g. Skipped gym, late meeting. Felt tired after lunch."></textarea></div>
+          <button class="btn btn-primary" id="saveDayBtn">Save today's record</button>
+          <div style="margin-top:16px">
+            <h2 style="font-size:14.5px">Recent saved records</h2>
+            <div id="recordsList"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Recipes for this day</h2>
+          <div id="planRecipes"></div>
+        </div>
+
+        <div class="card">
+          <h2>Gym workout (6–7 PM)</h2>
+          <div id="planGym"></div>
+          <p style="font-size:12.5px;color:var(--ink-2);margin-top:10px;background:var(--surface-2);padding:10px 12px;border-radius:10px"><b>Intensity rule:</b> you should be able to speak in short sentences. Don't chase personal records while glucose is uncontrolled.</p>
+        </div>
+
+        <div class="card">
+          <h2>Prep for tomorrow</h2>
+          <p id="planPrep" style="font-size:14px;color:var(--ink-2)"></p>
+        </div>
+
+        <div class="card">
+          <h2>Plan reference</h2>
+          <details class="fold"><summary>Weekly shopping list</summary><div class="fold-body" id="planShopping"></div></details>
+          <details class="fold"><summary>Safety rules — before, during &amp; after gym</summary><div class="fold-body" id="planSafety"></div></details>
+          <details class="fold"><summary>Eating rules (plate method, food order, oil)</summary><div class="fold-body" id="planRules"></div></details>
+        </div>
+
+        <p class="disclaimer">This plan is a structured self-management tool built around CDC/ADA-style meal planning and exercise safety guidance. It is not a prescription — keep following your clinician's medication and glucose-correction plan, and don't exercise with very high glucose plus ketones or symptoms.</p>
+      </section>
+
+      <!-- ============ LEARN ============ -->
+      <section class="view" id="view-learn">
+        <h1 class="page-title">Health library</h1>
+        <p class="page-sub">Symptoms, causes, what to do, and trusted resources — for you and your family. General education, not personal medical advice.</p>
+
+        <div class="urgent-box"><b>Get emergency help immediately for:</b> confusion or unconsciousness, seizures, vomiting that won't stop, trouble breathing, chest pain, fruity-smelling breath, severe dehydration, or very high sugar that is not coming down. Family: if the person can't swallow safely, do not force food or drink — call emergency services.</div>
+
+        <div class="card">
+          <h2>Ask AI ✨</h2>
+          <p style="font-size:13px;color:var(--ink-2);margin-bottom:10px">Ask anything about diabetes, food, or your plan. General education only — never dosing advice.</p>
+          <div class="field"><textarea id="aiQ" placeholder="e.g. Is poha okay for breakfast? How many carbs in 2 rotis?"></textarea></div>
+          <button class="btn btn-primary btn-sm" id="aiAsk">Ask</button>
+          <div id="aiA" style="margin-top:12px;font-size:14px;color:var(--ink-2);line-height:1.6;white-space:pre-wrap"></div>
+        </div>
+
+        <div class="card">
+          <h2>Low blood sugar (hypoglycemia)</h2>
+          <details class="fold"><summary>Symptoms to recognize</summary><div class="fold-body"><ul><li>Shakiness, sweating, fast heartbeat</li><li>Hunger, nausea</li><li>Dizziness, weakness, blurred vision</li><li>Irritability, anxiety, confusion</li><li>Severe: slurred speech, seizures, unconsciousness</li></ul><p>Generally suspected when glucose drops below about 70 mg/dL (3.9 mmol/L). Some people stop feeling early symptoms ("hypo unawareness") — tell your doctor if that happens.</p></div></details>
+          <details class="fold"><summary>Common causes</summary><div class="fold-body"><ul><li>Too much insulin or sulfonylurea-type tablets for the food eaten</li><li>Skipped or delayed meals</li><li>More exercise than usual, especially without adjusting food</li><li>Alcohol, particularly on an empty stomach</li></ul></div></details>
+          <details class="fold"><summary>What to do (the 15-15 approach many care plans use)</summary><div class="fold-body"><ul><li>Take about 15 g of fast-acting carbs — e.g. glucose tablets, ½ cup fruit juice, or 1 tbsp sugar/honey</li><li>Wait 15 minutes and recheck glucose</li><li>Repeat if still low; once recovered, eat a small snack with protein if the next meal is far away</li><li>Tell your care team about repeated lows — medication may need adjusting</li></ul><p><b>Family members:</b> learn where the fast-acting glucose is kept. If prescribed, learn how to use glucagon. Never give food/drink to someone who is unconscious.</p></div></details>
+        </div>
+
+        <div class="card">
+          <h2>High blood sugar (hyperglycemia)</h2>
+          <details class="fold"><summary>Symptoms to recognize</summary><div class="fold-body"><ul><li>Increased thirst and frequent urination</li><li>Fatigue, blurred vision, headache</li><li>Slow-healing cuts, frequent infections</li><li>Warning signs of emergency (DKA): nausea/vomiting, stomach pain, fruity breath, deep rapid breathing, confusion</li></ul></div></details>
+          <details class="fold"><summary>Common causes</summary><div class="fold-body"><ul><li>More carbohydrate than the plan, or sugary drinks</li><li>Missed medication or insulin doses</li><li>Illness, infection, or stress (these raise glucose even with normal eating)</li><li>Less activity than usual; some medications like steroids</li></ul></div></details>
+          <details class="fold"><summary>What to do</summary><div class="fold-body"><ul><li>Drink water; take medications as prescribed</li><li>A light walk can help if you feel well — but if glucose is above ~240–250 mg/dL, check ketones if you can, and do not exercise if ketones are present</li><li>Follow your sick-day plan when ill; contact your care team if highs persist over days, since medication may need adjusting</li></ul></div></details>
+        </div>
+
+        <div class="card">
+          <h2>Living well with diabetes</h2>
+          <details class="fold"><summary>HbA1c and common targets</summary><div class="fold-body"><p>HbA1c reflects average glucose over ~3 months. A common target for many adults is below 7%, but your doctor may set a different one based on your age, health, and risk of lows. Common monitoring rhythm: HbA1c every 3–6 months, plus annual eye exam, kidney check (urine/creatinine), foot exam, cholesterol, and blood pressure review.</p></div></details>
+          <details class="fold"><summary>Sick-day rules</summary><div class="fold-body"><ul><li>Never stop insulin without your doctor's instruction, even if not eating much</li><li>Check glucose more often (every 2–4 hours); check ketones if high</li><li>Sip water or sugar-free fluids constantly; if you can't eat, your care team may advise carb-containing fluids</li><li>Call your care team for repeated vomiting, ketones, or glucose staying very high</li></ul></div></details>
+          <details class="fold"><summary>Foot care</summary><div class="fold-body"><ul><li>Check feet daily for cuts, blisters, redness, swelling</li><li>Wash and dry carefully, especially between toes; moisturize tops/soles but not between toes</li><li>Never walk barefoot; wear well-fitting shoes; trim nails straight across</li><li>See a doctor promptly for any sore that doesn't heal</li></ul></div></details>
+          <details class="fold"><summary>Complications and prevention</summary><div class="fold-body"><p>Long-term high glucose can affect eyes (retinopathy), kidneys (nephropathy), nerves (neuropathy), heart and blood vessels. The good news: keeping glucose, blood pressure, and cholesterol in target, not smoking, and attending screening checks dramatically lowers these risks. Your time-in-range and HbA1c trends in this app are exactly what these screenings build on.</p></div></details>
+          <details class="fold"><summary>For family members and caregivers</summary><div class="fold-body"><ul><li>Learn the signs of low sugar and where the fast-acting glucose is kept</li><li>Know the emergency contact and doctor listed in Settings</li><li>Support, don't police — ask how you can help with meals, walks, and gym consistency</li><li>Use the Doctor report (Settings) before appointments so visits are data-driven</li></ul></div></details>
+        </div>
+
+        <div class="card learn-links">
+          <h2>Trusted resources</h2>
+          <ul style="padding-left:18px;font-size:14px">
+            <li><a href="https://diabetes.org" target="_blank" rel="noopener">American Diabetes Association — diabetes.org</a></li>
+            <li><a href="https://www.cdc.gov/diabetes" target="_blank" rel="noopener">CDC — Diabetes basics, meal planning, prevention</a></li>
+            <li><a href="https://www.niddk.nih.gov/health-information/diabetes" target="_blank" rel="noopener">NIDDK (NIH) — in-depth guides on diabetes care</a></li>
+            <li><a href="https://www.who.int/news-room/fact-sheets/detail/diabetes" target="_blank" rel="noopener">WHO — global diabetes fact sheet</a></li>
+            <li><a href="https://idf.org" target="_blank" rel="noopener">International Diabetes Federation — idf.org</a></li>
+            <li><a href="https://www.mayoclinic.org/diseases-conditions/diabetes/symptoms-causes/syc-20371444" target="_blank" rel="noopener">Mayo Clinic — symptoms, causes, treatment overview</a></li>
+          </ul>
+        </div>
+
+        <p class="disclaimer">This library is general education compiled from major public health organizations. It cannot replace your endocrinologist, dietitian, or diabetes educator — always follow your personal care plan.</p>
+      </section>
+
+      <!-- ============ SETTINGS ============ -->
+      <section class="view" id="view-settings">
+        <h1 class="page-title">Settings</h1>
+        <p class="page-sub">Profile, targets, units, and your data.</p>
+
+        <div class="card">
+          <h2>Profile</h2>
+          <div class="field"><label for="setName">Your name</label><input type="text" id="setName" placeholder="e.g. Sam"></div>
+          <div class="field"><label for="setDiaType">Diabetes type</label>
+            <select id="setDiaType"><option>Type 1</option><option selected>Type 2</option><option>Gestational</option><option>Prediabetes</option><option>Other / unsure</option></select>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="setAge">Age</label><input type="number" id="setAge" inputmode="numeric" min="10" max="120"></div>
+            <div class="field"><label for="setGender">Gender</label><select id="setGender"><option>Male</option><option>Female</option><option>Other</option><option>Prefer not to say</option></select></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="setHeight">Height (cm)</label><input type="number" id="setHeight" inputmode="decimal" min="80" max="250"></div>
+            <div class="field"><label for="setStepGoal">Daily step goal</label><input type="number" id="setStepGoal" inputmode="numeric" min="1000" step="500"></div>
+          </div>
+          <div class="field"><label for="setMedsMode">Diabetes medication</label>
+            <select id="setMedsMode"><option>Oral medication</option><option>Insulin</option><option>Oral + insulin</option><option>Lifestyle only</option></select>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Units &amp; targets</h2>
+          <div class="field">
+            <label>Glucose unit</label>
+            <div class="seg" id="unitSeg">
+              <button data-v="mgdl" class="active">mg/dL</button>
+              <button data-v="mmol">mmol/L</button>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="setLow">Target range — low (<span class="unitLabel">mg/dL</span>)</label><input type="number" id="setLow" inputmode="decimal" step="any"></div>
+            <div class="field"><label for="setHigh">Target range — high (<span class="unitLabel">mg/dL</span>)</label><input type="number" id="setHigh" inputmode="decimal" step="any"></div>
+          </div>
+          <p style="font-size:12.5px;color:var(--ink-3);margin-bottom:12px">Defaults follow the common 70–180 mg/dL (3.9–10.0 mmol/L) range. Use the targets your care team set for you.</p>
+          <button class="btn btn-primary" id="saveSettings">Save settings</button>
+        </div>
+
+        <div class="card">
+          <h2>Care team &amp; emergency contact</h2>
+          <div class="field"><label for="setDoctor">Doctor / clinic</label><input type="text" id="setDoctor" placeholder="e.g. Dr. Mehta, City Endocrine Clinic"></div>
+          <div class="field-row">
+            <div class="field"><label for="setEmName">Emergency contact name</label><input type="text" id="setEmName" placeholder="e.g. Priya (sister)"></div>
+            <div class="field"><label for="setEmPhone">Emergency contact phone</label><input type="tel" id="setEmPhone" placeholder="e.g. +91 98…"></div>
+          </div>
+          <p style="font-size:12.5px;color:var(--ink-3)">Shown on your doctor report so family or clinicians can reach the right person. Save with the button in "Units &amp; targets".</p>
+        </div>
+
+        <div class="card">
+          <h2>Doctor visit report</h2>
+          <p style="font-size:14px;color:var(--ink-2);margin-bottom:12px">Generates a clean printable report of the last 90 days — glucose statistics, time in range, estimated A1C, readings by context, lows and very-highs, medications, vitals, and your plan adherence records. Use your phone's print dialog to <b>Save as PDF</b> and share it with your doctor or family.</p>
+          <button class="btn btn-primary" id="doctorReport" style="width:auto">Generate doctor report</button>
+        </div>
+
+        <div class="card">
+          <h2>Your data — backup &amp; restore</h2>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" id="exportJson">Full backup (JSON)</button>
+            <button class="btn btn-ghost btn-sm" id="importJson">Restore backup</button>
+            <button class="btn btn-ghost btn-sm" id="exportCsv">Export readings (CSV)</button>
+            <button class="btn btn-ghost btn-sm" id="loadSample">Load sample data</button>
+            <button class="btn btn-danger btn-sm" id="clearData">Delete all data</button>
+          </div>
+          <input type="file" id="importFile" accept=".json,application/json" hidden>
+          <p style="font-size:12.5px;color:var(--ink-3);margin-top:12px" id="storageNote"></p>
+          <p style="font-size:12.5px;color:var(--ink-3);margin-top:6px" id="persistNote"></p>
+        </div>
+
+        <div class="card">
+          <h2>Reminders &amp; notifications</h2>
+          <p style="font-size:13px;color:var(--ink-2);margin-bottom:12px" id="remNote">Daily reminder notifications — even when the app is closed.</p>
+          <label class="agree-row" style="margin-bottom:10px"><input type="checkbox" id="remGlucose"> Morning glucose check (6:00 AM)</label>
+          <label class="agree-row" style="margin-bottom:10px"><input type="checkbox" id="remMeds"> Medication reminders (at each scheduled time)</label>
+          <label class="agree-row" style="margin-bottom:10px"><input type="checkbox" id="remPregym"> Pre-gym safety check (5:45 PM)</label>
+          <label class="agree-row"><input type="checkbox" id="remSaveDay"> Save your day record (9:30 PM)</label>
+        </div>
+
+        <div class="card">
+          <h2>AI features <span class="hint">optional</span></h2>
+          <p style="font-size:13px;color:var(--ink-2);margin-bottom:12px">Power the ✨ AI carb estimator and the "Ask AI" helper with your own Anthropic API key (get one at console.anthropic.com). The key is stored only on this device and requests go directly from your phone to the AI.</p>
+          <div class="field"><label for="aiKey">Anthropic API key</label><input type="password" id="aiKey" placeholder="sk-ant-…"></div>
+          <button class="btn btn-ghost btn-sm" id="saveAiKey">Save key</button>
+        </div>
+
+        <div class="card">
+          <h2>Pixel Watch &amp; Google Health</h2>
+          <p style="font-size:14px;color:var(--ink-2);line-height:1.6">Honest answer: Google's Health Connect (where your Pixel Watch data lives) only opens its data to <b>native Android apps installed from the Play Store</b> — web apps like this one cannot read it, and Google's older web API (Google Fit REST) is shut down for new apps. So automatic watch sync isn't technically possible here yet. What works today: your watch's activity shows in the Fitbit/Google app — log your workout minutes here in seconds via <b>Log → Activity</b>, and your plan's gym item already tracks whether you trained. If this app is ever wrapped as a native Android app, Health Connect sync becomes possible.</p>
+        </div>
+
+        <div class="card">
+          <h2>Use on your phone</h2>
+          <p style="font-size:14px;color:var(--ink-2);line-height:1.6">You're running the installable version. In Chrome, tap <b>⋮ menu → Add to Home screen → Install</b> — GlucoGuide becomes a real app icon, opens full-screen, and works completely offline after the first load. All your data is stored locally on this phone (it never leaves your device). Export a CSV backup now and then, and avoid "Delete browsing data" for this site, since that also deletes locally saved app data.</p>
+        </div>
+
+        <p class="disclaimer">GlucoGuide stores your entries so you can review them and share summaries with your care team. It is not a medical device and does not provide medical advice, dosing recommendations, or emergency alerts.</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Bottom nav (mobile) -->
+  <nav class="bottom">
+    <button class="nav-btn active" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Home</button>
+    <button class="nav-btn" data-nav="trends"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 6-8"/><path d="M3 21h18"/></svg>Trends</button>
+    <button class="nav-btn nav-log" data-nav="log" aria-label="Log entry"><span class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+    <button class="nav-btn" data-nav="meds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M8.5 15.5l7-7"/></svg>Meds</button>
+    <button class="nav-btn" data-nav="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18M8.5 14.5l2.2 2.2 4.8-4.7"/></svg>Plan</button>
+  </nav>
+</div>
+
+<div id="onboard" role="dialog" aria-label="Welcome setup">
+  <div class="ob-wrap">
+    <div class="ob-logo"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7s6.5 7 6.5 12a6.5 6.5 0 1 1-13 0c0-5 6.5-12 6.5-12z"/></svg></div>GlucoGuide</div>
+    <div class="ob-dots"><span class="on"></span><span></span><span></span><span></span></div>
+
+    <div class="ob-step active" data-step="0">
+      <h1>Welcome 👋</h1>
+      <p class="ob-sub">Your private diabetes companion — glucose, meds, meals, activity, your 7-day plan, and doctor-ready reports. Everything stays on this device.</p>
+      <div class="terms-box">
+        <b>Before you start</b><br><br>
+        1. <b>Not medical advice.</b> GlucoGuide is a self-tracking and education tool. It does not diagnose, treat, cure, or prevent any disease, and it never replaces your doctor, diabetes educator, or emergency services.<br><br>
+        2. <b>Your data stays yours.</b> Everything you enter is stored only on this device. Nothing is uploaded, sold, or shared. You can export or delete all data anytime in Settings.<br><br>
+        3. <b>Medication safety.</b> Never change insulin or tablet doses based on this app. Follow your prescription and your clinician's correction plan.<br><br>
+        4. <b>Emergencies.</b> For severe low sugar, confusion, vomiting, chest pain, or breathing trouble — seek emergency care immediately, don't consult the app.
+      </div>
+      <label class="agree-row"><input type="checkbox" id="obAgree"> I understand and agree — this is a self-management tool, not medical care.</label>
+      <div class="ob-nav"><button class="btn btn-primary" id="obStart" disabled style="opacity:.5">Get started</button></div>
+    </div>
+
+    <div class="ob-step" data-step="1">
+      <h1>About you</h1>
+      <p class="ob-sub">Used only to personalize your app and doctor reports.</p>
+      <div class="field"><label for="obName">Your name</label><input type="text" id="obName" placeholder="e.g. Pritesh"></div>
+      <div class="field-row">
+        <div class="field"><label for="obAge">Age</label><input type="number" id="obAge" inputmode="numeric" min="10" max="120" placeholder="e.g. 34"></div>
+        <div class="field"><label for="obGender">Gender</label><select id="obGender"><option>Male</option><option>Female</option><option>Other</option><option>Prefer not to say</option></select></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="obHeight">Height (cm)</label><input type="number" id="obHeight" inputmode="decimal" min="80" max="250" placeholder="e.g. 172"></div>
+        <div class="field"><label for="obWeight">Weight (kg)</label><input type="number" id="obWeight" inputmode="decimal" min="20" max="350" step="any" placeholder="e.g. 78"></div>
+      </div>
+      <div class="ob-nav"><button class="btn btn-ghost" data-obgo="0">Back</button><button class="btn btn-primary" data-obgo="2">Next</button></div>
+    </div>
+
+    <div class="ob-step" data-step="2">
+      <h1>Your health</h1>
+      <p class="ob-sub">Pick everything that applies — it shapes your doctor report.</p>
+      <div class="field"><label for="obDiaType">Diabetes type</label>
+        <select id="obDiaType"><option>Type 1</option><option selected>Type 2</option><option>Gestational</option><option>Prediabetes</option><option>Other / unsure</option></select></div>
+      <div class="field"><label>Other conditions</label>
+        <div class="seg multi" id="obConds">
+          <button data-v="Hypertension">Hypertension</button>
+          <button data-v="High cholesterol">High cholesterol</button>
+          <button data-v="Heart disease">Heart disease</button>
+          <button data-v="Kidney disease">Kidney disease</button>
+          <button data-v="Thyroid">Thyroid</button>
+          <button data-v="Fatty liver">Fatty liver</button>
+          <button data-v="Obesity">Obesity</button>
+        </div></div>
+      <div class="field"><label>Current diabetes medication</label>
+        <div class="seg" id="obMedsMode">
+          <button data-v="Oral medication" class="active">Oral medication</button>
+          <button data-v="Insulin">Insulin</button>
+          <button data-v="Oral + insulin">Oral + insulin</button>
+          <button data-v="Lifestyle only">Lifestyle only</button>
+        </div></div>
+      <div class="ob-nav"><button class="btn btn-ghost" data-obgo="1">Back</button><button class="btn btn-primary" data-obgo="3">Next</button></div>
+    </div>
+
+    <div class="ob-step" data-step="3">
+      <h1>Units &amp; goals</h1>
+      <p class="ob-sub">You can change these anytime in Settings.</p>
+      <div class="field"><label>Glucose unit</label>
+        <div class="seg" id="obUnit"><button data-v="mgdl" class="active">mg/dL</button><button data-v="mmol">mmol/L</button></div></div>
+      <div class="field"><label for="obSteps">Daily step goal</label><input type="number" id="obSteps" inputmode="numeric" min="1000" step="500" value="7500"></div>
+      <p style="font-size:12.5px;color:var(--ink-3);margin-bottom:8px">Glucose targets start at the common 70–180 mg/dL range — adjust in Settings to match your care team's plan.</p>
+      <div class="ob-nav"><button class="btn btn-ghost" data-obgo="2">Back</button><button class="btn btn-primary" id="obFinish">Start using GlucoGuide</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="printReport" aria-hidden="true"></div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= State & persistence ================= */
+const KEY = "glucoguide:data:v1";
+const MMOL = 18.016;
+let memoryOnly = false;
+
+let state = {
+  settings: { name:"", diaType:"Type 2", unit:"mgdl", low:70, high:180 },
+  readings: [],   // {id, ts, mg, context, notes}
+  meds: [],       // {id, name, type, dose, times:[]}
+  doses: [],      // {id, ts, medId, medName, dose, unit}
+  meals: [],      // {id, ts, name, carbs, type}
+  activities: [], // {id, ts, type, minutes, intensity}
+  taken: {},      // { "YYYY-MM-DD": ["medId@HH:MM", ...] }
+  planLog: {},    // { "YYYY-MM-DD": { itemId: "done"|"skipped" } }
+  vitals: [],     // {id, ts, type:'weight'|'bp'|'a1c', v1, v2}
+  dayRecords: {}, // { "YYYY-MM-DD": {pct, done, total, missed:[], skipped:[], note, savedAt} }
+  labs: [],       // {id, ts, type, value}
+  steps: {}       // { "YYYY-MM-DD": number }
+};
+
+/* Storage adapter: uses Claude's storage when running as an artifact,
+   the browser's local storage when opened as a standalone file on a
+   phone/computer, and in-memory as a last resort. */
+const store = (function(){
+  const hasClaude = typeof window.storage !== "undefined" && window.storage && typeof window.storage.get === "function";
+  let hasLocal = false;
+  if(!hasClaude){
+    try{
+      const t = "__gg_test__";
+      window.localStorage.setItem(t,"1");
+      window.localStorage.removeItem(t);
+      hasLocal = true;
+    }catch(e){ hasLocal = false; }
+  }
+  return {
+    mode: hasClaude ? "claude" : (hasLocal ? "local" : "memory"),
+    async get(key){
+      if(hasClaude){
+        try{ const r = await window.storage.get(key); return r ? r.value : null; }
+        catch(e){ return null; }
+      }
+      if(hasLocal){
+        try{ return window.localStorage.getItem(key); }catch(e){ return null; }
+      }
+      return null;
+    },
+    async set(key, value){
+      if(hasClaude){
+        try{ const r = await window.storage.set(key, value); return !!r; }
+        catch(e){ return false; }
+      }
+      if(hasLocal){
+        try{ window.localStorage.setItem(key, value); return true; }catch(e){ return false; }
+      }
+      return false;
+    }
+  };
+})();
+
+async function load(){
+  try{
+    const raw = await store.get(KEY);
+    if(raw){
+      const data = JSON.parse(raw);
+      state = Object.assign(state, data);
+      state.settings = Object.assign({name:"",diaType:"Type 2",unit:"mgdl",low:70,high:180}, data.settings||{});
+      state.planLog = data.planLog || {};
+      state.taken = data.taken || {};
+      state.vitals = data.vitals || [];
+      state.dayRecords = data.dayRecords || {};
+      state.labs = data.labs || [];
+      state.steps = data.steps || {};
+    }
+  }catch(e){ /* no saved data yet */ }
+  memoryOnly = (store.mode === "memory");
+}
+let saveTimer = null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    const ok = await store.set(KEY, JSON.stringify(state));
+    if(!ok){ memoryOnly = true; updateStorageNote(); }
+  }, 250);
+}
+function updateStorageNote(){
+  const el = document.getElementById("storageNote");
+  if(!el) return;
+  el.textContent = memoryOnly
+    ? "Saving is unavailable right now — entries will be kept for this session only."
+    : (store.mode === "local"
+        ? "Entries are saved on this device (browser storage) and restored when you return — even after closing the page."
+        : "Entries are saved automatically and restored when you return.");
+}
+
+/* ================= Helpers ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const pad = n => String(n).padStart(2,"0");
+
+function dayKey(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function nowParts(){
+  const d = new Date();
+  return { date: dayKey(d), time: pad(d.getHours())+":"+pad(d.getMinutes()) };
+}
+function tsFrom(dateStr, timeStr){
+  const d = new Date(dateStr + "T" + (timeStr || "12:00"));
+  return isNaN(d) ? Date.now() : d.getTime();
+}
+function fmtTime(ts){
+  const d = new Date(ts);
+  let h = d.getHours(), m = pad(d.getMinutes());
+  const ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
+  return h + ":" + m + " " + ap;
+}
+function fmtDay(ts){
+  const d = new Date(ts), today = dayKey(new Date());
+  const yest = dayKey(new Date(Date.now() - 864e5));
+  const k = dayKey(d);
+  if(k === today) return "Today";
+  if(k === yest) return "Yesterday";
+  return d.toLocaleDateString(undefined,{month:"short",day:"numeric"});
+}
+function unitLabel(){ return state.settings.unit === "mmol" ? "mmol/L" : "mg/dL"; }
+function toDisplay(mg){
+  return state.settings.unit === "mmol" ? (mg / MMOL) : mg;
+}
+function fmtG(mg, withUnit){
+  const v = toDisplay(mg);
+  const s = state.settings.unit === "mmol" ? v.toFixed(1) : Math.round(v).toString();
+  return withUnit ? s + " " + unitLabel() : s;
+}
+function fromInput(val){
+  const n = parseFloat(val);
+  if(isNaN(n) || n <= 0) return null;
+  return state.settings.unit === "mmol" ? n * MMOL : n;
+}
+function classify(mg){
+  if(mg < state.settings.low) return "low";
+  if(mg > state.settings.high) return "high";
+  return "in";
+}
+const CLASS_LABEL = { low:"Below range", in:"In range", high:"Above range" };
+
+function readingsSince(days){
+  const cutoff = Date.now() - days * 864e5;
+  return state.readings.filter(r => r.ts >= cutoff).sort((a,b)=>a.ts-b.ts);
+}
+function avg(arr){ return arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0; }
+function stdev(arr){
+  if(arr.length < 2) return 0;
+  const m = avg(arr);
+  return Math.sqrt(avg(arr.map(v=>(v-m)*(v-m))));
+}
+function eA1c(avgMg){ return (avgMg + 46.7) / 28.7; }
+
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>t.classList.remove("show"), 2400);
+}
+
+/* ================= Navigation ================= */
+let activeView = "dashboard";
+function nav(view){
+  activeView = view;
+  $$(".view").forEach(v => v.classList.toggle("active", v.id === "view-"+view));
+  $$("[data-nav]").forEach(b => b.classList.toggle("active", b.dataset.nav === view));
+  window.scrollTo({top:0});
+  renderAll();
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-nav]");
+  if(b) nav(b.dataset.nav);
+});
+
+/* ================= Dashboard ================= */
+function trendArrow(){
+  const rs = state.readings.slice().sort((a,b)=>b.ts-a.ts);
+  if(rs.length < 2) return "";
+  const [a,b] = rs;
+  if(a.ts - b.ts > 6*3600e3) return "";
+  const diff = a.mg - b.mg;
+  if(diff > 25) return "↑";
+  if(diff > 10) return "↗";
+  if(diff < -25) return "↓";
+  if(diff < -10) return "↘";
+  return "→";
+}
+function renderReadout(){
+  const card = $("#readoutCard");
+  const rs = state.readings.slice().sort((a,b)=>b.ts-a.ts);
+  if(!rs.length){
+    card.innerHTML = `
+      <div class="ro-label">Blood glucose</div>
+      <div class="ro-empty">No readings yet. Log your first reading to light up your dashboard.</div>
+      <button class="btn-light" data-nav="log">Log a reading</button>`;
+    return;
+  }
+  const r = rs[0], cls = classify(r.mg), arrow = trendArrow();
+  card.innerHTML = `
+    <div class="ro-label">Latest blood glucose</div>
+    <div class="ro-main">
+      <span class="ro-value">${fmtG(r.mg)}</span>
+      ${arrow ? `<span class="ro-arrow" aria-label="trend">${arrow}</span>` : ""}
+      <span class="ro-unit">${unitLabel()}</span>
+    </div>
+    <div class="ro-meta">
+      <span class="pill ${cls}">${CLASS_LABEL[cls]}</span>
+      <span>${esc(r.context)} · ${fmtDay(r.ts)}, ${fmtTime(r.ts)}</span>
+    </div>`;
+}
+function renderAlert(){
+  const slot = $("#alertSlot");
+  const rs = state.readings.slice().sort((a,b)=>b.ts-a.ts);
+  slot.innerHTML = "";
+  if(!rs.length) return;
+  const r = rs[0];
+  if(Date.now() - r.ts > 3*3600e3) return; // only recent readings
+  if(r.mg < state.settings.low){
+    slot.innerHTML = `<div class="banner low" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+      <div><b>Low reading (${fmtG(r.mg,true)})</b>Treat per your care plan — many plans use fast-acting carbs and a recheck in 15 minutes. If symptoms are severe or you can't treat it yourself, get help right away.</div>
+    </div>`;
+  } else if(r.mg > 250){
+    slot.innerHTML = `<div class="banner high">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+      <div><b>High reading (${fmtG(r.mg,true)})</b>Drink water and follow your care plan. If highs persist or you feel unwell, contact your care team — people with type 1 may need to check ketones.</div>
+    </div>`;
+  }
+}
+function tirCounts(days){
+  const rs = readingsSince(days);
+  const c = {low:0,in:0,high:0};
+  rs.forEach(r => c[classify(r.mg)]++);
+  return {c, total: rs.length};
+}
+function renderTIR(){
+  const {c, total} = tirCounts(14);
+  const el = $("#tirBlock");
+  if(!total){ el.innerHTML = `<div class="empty"><b>No data yet</b>Readings from the last 14 days will appear here.</div>`; return; }
+  const p = k => Math.round(100*c[k]/total);
+  el.innerHTML = `
+    <div class="tir-strip" role="img" aria-label="Time in range: ${p("low")}% low, ${p("in")}% in range, ${p("high")}% high">
+      <span class="s-low" style="width:${100*c.low/total}%"></span>
+      <span class="s-in" style="width:${100*c.in/total}%"></span>
+      <span class="s-high" style="width:${100*c.high/total}%"></span>
+    </div>
+    <div class="tir-legend">
+      <span><span class="dot in"></span>In range <b>${p("in")}%</b></span>
+      <span><span class="dot high"></span>High <b>${p("high")}%</b></span>
+      <span><span class="dot low"></span>Low <b>${p("low")}%</b></span>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3);margin-top:10px">${total} reading${total===1?"":"s"} · target ${fmtG(state.settings.low)}–${fmtG(state.settings.high,true)}</p>`;
+}
+function renderTodayStats(){
+  const today = dayKey(new Date());
+  const rToday = state.readings.filter(r => dayKey(new Date(r.ts)) === today);
+  const carbs = state.meals.filter(m => dayKey(new Date(m.ts)) === today).reduce((s,m)=>s+(m.carbs||0),0);
+  const insulin = state.doses.filter(d => dayKey(new Date(d.ts)) === today && d.unit === "units").reduce((s,d)=>s+(d.dose||0),0);
+  const mins = state.activities.filter(a => dayKey(new Date(a.ts)) === today).reduce((s,a)=>s+(a.minutes||0),0);
+  const r30 = readingsSince(30).map(r=>r.mg);
+  const a1c = r30.length >= 5 ? eA1c(avg(r30)).toFixed(1) + "%" : "—";
+  $("#todayStats").innerHTML = `
+    <div class="stat"><div class="s-label">Avg glucose</div><div class="s-value">${rToday.length?fmtG(avg(rToday.map(r=>r.mg))):"—"}</div><div class="s-sub">${rToday.length} reading${rToday.length===1?"":"s"} today</div></div>
+    <div class="stat"><div class="s-label">Carbs</div><div class="s-value">${carbs?Math.round(carbs):"—"}</div><div class="s-sub">grams today</div></div>
+    <div class="stat"><div class="s-label">Insulin</div><div class="s-value">${insulin?+insulin.toFixed(1):"—"}</div><div class="s-sub">units logged</div></div>
+    <div class="stat"><div class="s-label">Activity</div><div class="s-value">${mins||"—"}</div><div class="s-sub">minutes today</div></div>
+    <div class="stat"><div class="s-label">Est. A1C</div><div class="s-value">${a1c}</div><div class="s-sub">from 30-day avg</div></div>`;
+}
+
+/* ================= Charts (hand-rolled SVG) ================= */
+function lineChart(days, height){
+  const rs = readingsSince(days);
+  const W = 720, H = height || 240, padL = 44, padR = 14, padT = 16, padB = 30;
+  if(rs.length < 2){
+    return `<div class="empty"><b>Not enough data</b>Log at least two readings to see a trend line.</div>`;
+  }
+  const t0 = Date.now() - days*864e5, t1 = Date.now();
+  const vals = rs.map(r=>r.mg);
+  const lo = Math.min(Math.min(...vals), state.settings.low) - 15;
+  const hi = Math.max(Math.max(...vals), state.settings.high) + 15;
+  const x = ts => padL + (ts - t0)/(t1 - t0) * (W - padL - padR);
+  const y = mg => padT + (1 - (mg - lo)/(hi - lo)) * (H - padT - padB);
+
+  // grid lines: 4 horizontal
+  let grid = "";
+  for(let i=0;i<=3;i++){
+    const mg = lo + (hi-lo)*i/3;
+    const yy = y(mg);
+    grid += `<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#E3EAE7" stroke-width="1"/>
+             <text x="${padL-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#7C918D" font-family="Spline Sans Mono,monospace">${fmtG(mg)}</text>`;
+  }
+  // day ticks
+  let ticks = "";
+  const step = days <= 7 ? 1 : days <= 14 ? 2 : days <= 30 ? 7 : 21;
+  for(let d=days; d>=0; d-=step){
+    const ts = t1 - d*864e5, xx = x(ts);
+    const lbl = d===0 ? "Now" : new Date(ts).toLocaleDateString(undefined,{month:"numeric",day:"numeric"});
+    ticks += `<text x="${xx}" y="${H-8}" text-anchor="middle" font-size="11" fill="#7C918D" font-family="Spline Sans Mono,monospace">${lbl}</text>`;
+  }
+  // target band
+  const bandTop = y(state.settings.high), bandBot = y(state.settings.low);
+  const band = `<rect x="${padL}" y="${bandTop}" width="${W-padL-padR}" height="${bandBot-bandTop}" fill="rgba(47,158,99,.10)"/>
+    <line x1="${padL}" y1="${bandTop}" x2="${W-padR}" y2="${bandTop}" stroke="rgba(47,158,99,.4)" stroke-dasharray="4 4"/>
+    <line x1="${padL}" y1="${bandBot}" x2="${W-padR}" y2="${bandBot}" stroke="rgba(47,158,99,.4)" stroke-dasharray="4 4"/>`;
+  // path + dots
+  const pts = rs.map(r => [x(r.ts), y(r.mg), classify(r.mg)]);
+  const path = pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+  const col = {low:"#D5483C", in:"#0E7C66", high:"#D89614"};
+  const dots = pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.4" fill="${col[p[2]]}" stroke="#fff" stroke-width="1.4"/>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Glucose readings over the last ${days} days">
+    ${grid}${band}
+    <path d="${path}" fill="none" stroke="#0E7C66" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>
+    ${dots}${ticks}
+  </svg>`;
+}
+function donut(days){
+  const {c, total} = tirCounts(days);
+  if(!total) return `<div class="empty"><b>No readings in this range</b>Log readings to see your time in range.</div>`;
+  const R = 52, C = 2*Math.PI*R;
+  const segs = [["in","#2F9E63"],["high","#D89614"],["low","#D5483C"]];
+  let off = 0, circles = "";
+  segs.forEach(([k,colr])=>{
+    const frac = c[k]/total;
+    if(frac > 0){
+      circles += `<circle r="${R}" cx="70" cy="70" fill="none" stroke="${colr}" stroke-width="18"
+        stroke-dasharray="${(frac*C).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-off*C).toFixed(2)}"
+        transform="rotate(-90 70 70)"/>`;
+      off += frac;
+    }
+  });
+  const p = k => Math.round(100*c[k]/total);
+  return `
+    <svg width="140" height="140" viewBox="0 0 140 140" role="img" aria-label="Time in range donut chart">
+      <circle r="${R}" cx="70" cy="70" fill="none" stroke="#EDF2F0" stroke-width="18"/>
+      ${circles}
+      <text x="70" y="66" text-anchor="middle" font-size="24" font-weight="600" fill="#13302B" font-family="Spline Sans Mono,monospace">${p("in")}%</text>
+      <text x="70" y="84" text-anchor="middle" font-size="10.5" fill="#7C918D" font-family="Instrument Sans,sans-serif">in range</text>
+    </svg>
+    <div class="tir-legend" style="flex-direction:column;gap:8px">
+      <span><span class="dot in"></span>In range <b>${p("in")}%</b> · ${c.in}</span>
+      <span><span class="dot high"></span>Above <b>${p("high")}%</b> · ${c.high}</span>
+      <span><span class="dot low"></span>Below <b>${p("low")}%</b> · ${c.low}</span>
+    </div>`;
+}
+
+/* ================= Entries (unified) ================= */
+function allEntries(){
+  const e = [];
+  state.readings.forEach(r=>e.push({kind:"glucose",ts:r.ts,id:r.id,obj:r}));
+  state.doses.forEach(d=>e.push({kind:"med",ts:d.ts,id:d.id,obj:d}));
+  state.meals.forEach(m=>e.push({kind:"meal",ts:m.ts,id:m.id,obj:m}));
+  state.activities.forEach(a=>e.push({kind:"activity",ts:a.ts,id:a.id,obj:a}));
+  state.vitals.forEach(v=>e.push({kind:"vital",ts:v.ts,id:v.id,obj:v}));
+  state.labs.forEach(l=>e.push({kind:"lab",ts:l.ts,id:l.id,obj:l}));
+  return e.sort((a,b)=>b.ts-a.ts);
+}
+const ICONS = {
+  glucose:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7s6.5 7 6.5 12a6.5 6.5 0 1 1-13 0c0-5 6.5-12 6.5-12z"/></svg>`,
+  med:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M8.5 15.5l7-7"/></svg>`,
+  meal:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3M6 3v18"/><path d="M19 3a4 4 0 0 0-4 6v12"/></svg>`,
+  activity:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg>`,
+  vital:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>`
+};
+const VITAL_LABEL = {weight:"Weight", bp:"Blood pressure", a1c:"HbA1c lab"};
+const LAB_TYPES = {
+  chol:["Total cholesterol","mg/dL"], ldl:["LDL cholesterol","mg/dL"], hdl:["HDL cholesterol","mg/dL"],
+  trig:["Triglycerides","mg/dL"], fbs:["Fasting glucose (lab)","mg/dL"], ppbs:["Post-prandial glucose (lab)","mg/dL"],
+  creat:["Creatinine","mg/dL"], egfr:["eGFR","mL/min"], ualb:["Urine microalbumin","mg/g"],
+  alt:["ALT (SGPT)","U/L"], ast:["AST (SGOT)","U/L"], tsh:["TSH","mIU/L"],
+  vitd:["Vitamin D","ng/mL"], vitb12:["Vitamin B12","pg/mL"], hb:["Hemoglobin","g/dL"], uric:["Uric acid","mg/dL"]
+};
+function vitalValue(v){
+  if(v.type==="weight") return v.v1 + " kg";
+  if(v.type==="bp") return v.v1 + "/" + v.v2 + " mmHg";
+  return v.v1 + " %";
+}
+function entryHTML(e, deletable){
+  let title="", sub="", icls="";
+  if(e.kind==="glucose"){
+    const cls = classify(e.obj.mg);
+    icls="ei-glucose";
+    title = `<span class="val">${fmtG(e.obj.mg,true)}</span> <span class="badge ${cls}">${CLASS_LABEL[cls]}</span>`;
+    sub = `${esc(e.obj.context)} · ${fmtDay(e.ts)}, ${fmtTime(e.ts)}${e.obj.notes?" · "+esc(e.obj.notes):""}`;
+  } else if(e.kind==="med"){
+    icls="ei-med";
+    title = `${esc(e.obj.medName)} <span class="val">${e.obj.dose} ${esc(e.obj.unit)}</span>`;
+    sub = `Medication · ${fmtDay(e.ts)}, ${fmtTime(e.ts)}`;
+  } else if(e.kind==="meal"){
+    icls="ei-meal";
+    title = `${esc(e.obj.name)} <span class="val">${Math.round(e.obj.carbs)} g carbs</span>`;
+    sub = `${esc(e.obj.type)} · ${fmtDay(e.ts)}, ${fmtTime(e.ts)}`;
+  } else if(e.kind==="lab"){
+    icls="ei-med";
+    const def = LAB_TYPES[e.obj.type] || [e.obj.type,""];
+    title = `${esc(def[0])} <span class="val">${e.obj.value} ${def[1]}</span>`;
+    sub = `Lab result · ${fmtDay(e.ts)}, ${fmtTime(e.ts)}`;
+  } else if(e.kind==="vital"){
+    icls="ei-activity";
+    title = `${VITAL_LABEL[e.obj.type]} <span class="val">${vitalValue(e.obj)}</span>`;
+    sub = `Vitals · ${fmtDay(e.ts)}, ${fmtTime(e.ts)}`;
+  } else {
+    icls="ei-activity";
+    title = `${esc(e.obj.type)} <span class="val">${e.obj.minutes} min</span>`;
+    sub = `${esc(e.obj.intensity)} activity · ${fmtDay(e.ts)}, ${fmtTime(e.ts)}`;
+  }
+  const thumb = (e.kind==="meal" && e.obj.photo) ? `<img src="${e.obj.photo}" alt="" style="width:42px;height:42px;border-radius:10px;object-fit:cover;flex:none">` : "";
+  return `<div class="entry">
+    <div class="entry-icon ${icls}">${ICONS[e.kind]}</div>
+    <div class="entry-body"><div class="entry-title">${title}</div><div class="entry-sub">${sub}</div></div>${thumb}
+    ${deletable?`<button class="entry-del" data-del="${e.kind}:${e.id}" aria-label="Delete entry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg></button>`:""}
+  </div>`;
+}
+let diaryFilter = "all", diaryQuery = "";
+function entrySearchText(e){
+  const o = e.obj;
+  return [o.notes, o.name, o.medName, o.type, o.context, o.intensity,
+    e.kind==="lab" ? (LAB_TYPES[o.type]||[o.type])[0] : ""].filter(Boolean).join(" ").toLowerCase();
+}
+function renderEntryLists(){
+  const all = allEntries();
+  $("#dashRecent").innerHTML = all.length
+    ? all.slice(0,5).map(e=>entryHTML(e,false)).join("")
+    : `<div class="empty"><b>Nothing logged yet</b>Your latest entries will show up here.</div>`;
+  let list = all;
+  if(diaryFilter !== "all") list = list.filter(e=>e.kind===diaryFilter);
+  if(diaryQuery) list = list.filter(e=>entrySearchText(e).includes(diaryQuery));
+  list = list.slice(0,60);
+  if(!list.length){
+    $("#logRecent").innerHTML = `<div class="empty"><b>${all.length?"No matches":"No entries yet"}</b>${all.length?"Try a different search or filter.":"Use the forms above to start your log."}</div>`;
+    return;
+  }
+  let out = "", lastDay = "";
+  list.forEach(e=>{
+    const d = fmtDay(e.ts);
+    if(d !== lastDay){ out += `<div class="diary-day">${d}</div>`; lastDay = d; }
+    out += entryHTML(e,true);
+  });
+  $("#logRecent").innerHTML = out;
+}
+$("#diarySearch").addEventListener("input", e=>{ diaryQuery = e.target.value.trim().toLowerCase(); renderEntryLists(); });
+$("#diaryFilters").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  diaryFilter = b.dataset.f;
+  $$("#diaryFilters button").forEach(x=>x.classList.toggle("active",x===b));
+  renderEntryLists();
+});
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-del]");
+  if(!b) return;
+  const [kind,id] = b.dataset.del.split(":");
+  const map = {glucose:"readings", med:"doses", meal:"meals", activity:"activities", vital:"vitals", lab:"labs"};
+  state[map[kind]] = state[map[kind]].filter(x => x.id !== id);
+  save(); renderAll(); toast("Entry deleted");
+});
+
+/* ================= Log forms ================= */
+let gContextVal = "Fasting";
+$("#gContext").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  gContextVal = b.dataset.v;
+  $$("#gContext button").forEach(x=>x.classList.toggle("active", x===b));
+});
+$$(".tab").forEach(t => t.addEventListener("click", ()=>{
+  $$(".tab").forEach(x=>x.classList.toggle("active", x===t));
+  ["glucose","med","meal","activity","vitals"].forEach(k=>{
+    $("#logtab-"+k).hidden = (k !== t.dataset.logtab);
+  });
+}));
+function resetDates(){
+  const {date,time} = nowParts();
+  ["g","d","m","a","v"].forEach(p=>{
+    const dEl = $("#"+p+"Date"), tEl = $("#"+p+"Time");
+    if(dEl && !dEl.value) dEl.value = date;
+    if(tEl && !tEl.value) tEl.value = time;
+  });
+}
+$("#saveGlucose").addEventListener("click", ()=>{
+  const mg = fromInput($("#gValue").value);
+  if(mg === null){ toast("Enter a glucose value first"); $("#gValue").focus(); return; }
+  if(mg < 10 || mg > 900){ toast("That value looks out of range — double-check it"); return; }
+  state.readings.push({ id:uid(), ts:tsFrom($("#gDate").value, $("#gTime").value), mg, context:gContextVal, notes:$("#gNotes").value.trim() });
+  $("#gValue").value=""; $("#gNotes").value="";
+  save(); renderAll();
+  const cls = classify(mg);
+  toast(cls==="in" ? "Reading saved — in range ✓" : "Reading saved — " + CLASS_LABEL[cls].toLowerCase());
+  if(cls!=="in") nav("dashboard");
+});
+$("#saveDose").addEventListener("click", ()=>{
+  const medId = $("#dMed").value;
+  if(!state.meds.length){ toast("Add a medication first on the Medications page"); return; }
+  const dose = parseFloat($("#dDose").value);
+  if(isNaN(dose) || dose<=0){ toast("Enter the dose amount"); $("#dDose").focus(); return; }
+  const med = state.meds.find(m=>m.id===medId);
+  state.doses.push({ id:uid(), ts:tsFrom($("#dDate").value,$("#dTime").value), medId, medName:med?med.name:"Medication", dose, unit:$("#dUnit").value });
+  $("#dDose").value="";
+  save(); renderAll(); toast("Dose saved");
+});
+$("#saveMeal").addEventListener("click", ()=>{
+  const name = $("#mName").value.trim();
+  const carbs = parseFloat($("#mCarbs").value);
+  if(!name){ toast("Describe the meal first"); $("#mName").focus(); return; }
+  if(isNaN(carbs) || carbs<0){ toast("Enter the carbs in grams"); $("#mCarbs").focus(); return; }
+  const meal = { id:uid(), ts:tsFrom($("#mDate").value,$("#mTime").value), name, carbs, type:$("#mType").value };
+  if(mealPhotoData) meal.photo = mealPhotoData;
+  state.meals.push(meal);
+  $("#mName").value=""; $("#mCarbs").value=""; $("#mPhoto").value=""; mealPhotoData = null;
+  save(); renderAll(); toast("Meal saved");
+});
+$("#saveActivity").addEventListener("click", ()=>{
+  const type = $("#aType").value.trim();
+  const mins = parseInt($("#aMin").value,10);
+  if(!type){ toast("Name the activity first"); $("#aType").focus(); return; }
+  if(isNaN(mins) || mins<=0){ toast("Enter the duration in minutes"); $("#aMin").focus(); return; }
+  state.activities.push({ id:uid(), ts:tsFrom($("#aDate").value,$("#aTime").value), type, minutes:mins, intensity:$("#aIntensity").value });
+  $("#aType").value=""; $("#aMin").value="";
+  save(); renderAll(); toast("Activity saved");
+});
+$("#saveVitals").addEventListener("click", ()=>{
+  const ts = tsFrom($("#vDate").value, $("#vTime").value);
+  const w = parseFloat($("#vWeight").value);
+  const sys = parseInt($("#vSys").value,10), dia = parseInt($("#vDia").value,10);
+  const a1c = parseFloat($("#vA1c").value);
+  let saved = 0;
+  if(!isNaN(w) && w>0){ state.vitals.push({id:uid(), ts, type:"weight", v1:+w.toFixed(1)}); saved++; }
+  if(!isNaN(sys) && !isNaN(dia) && sys>0 && dia>0){ state.vitals.push({id:uid(), ts, type:"bp", v1:sys, v2:dia}); saved++; }
+  if(!isNaN(a1c) && a1c>1){ state.vitals.push({id:uid(), ts, type:"a1c", v1:+a1c.toFixed(1)}); saved++; }
+  if(!saved){ toast("Enter at least one measurement"); return; }
+  $("#vWeight").value=""; $("#vSys").value=""; $("#vDia").value=""; $("#vA1c").value="";
+  save(); renderAll(); toast(saved + " vital" + (saved>1?"s":"") + " saved");
+});
+function latestVital(type){
+  const vs = state.vitals.filter(v=>v.type===type).sort((a,b)=>b.ts-a.ts);
+  return vs[0] || null;
+}
+function renderVitalsStats(){
+  const w = latestVital("weight"), bp = latestVital("bp"), a = latestVital("a1c");
+  $("#vitalsStats").innerHTML = `
+    <div class="stat"><div class="s-label">Weight</div><div class="s-value">${w?w.v1:"—"}</div><div class="s-sub">${w?"kg · "+fmtDay(w.ts):"not logged"}</div></div>
+    <div class="stat"><div class="s-label">Blood pressure</div><div class="s-value">${bp?bp.v1+"/"+bp.v2:"—"}</div><div class="s-sub">${bp?"mmHg · "+fmtDay(bp.ts):"not logged"}</div></div>
+    <div class="stat"><div class="s-label">HbA1c (lab)</div><div class="s-value">${a?a.v1+"%":"—"}</div><div class="s-sub">${a?fmtDay(a.ts):"not logged"}</div></div>`;
+}
+
+function renderMedSelect(){
+  const sel = $("#dMed");
+  sel.innerHTML = state.meds.length
+    ? state.meds.map(m=>`<option value="${m.id}">${esc(m.name)}${m.dose?" · "+esc(m.dose):""}</option>`).join("")
+    : `<option value="">No medications added yet</option>`;
+}
+
+/* ================= Medications ================= */
+$("#addMed").addEventListener("click", ()=>{
+  const name = $("#medName").value.trim();
+  if(!name){ toast("Enter the medication name"); $("#medName").focus(); return; }
+  const times = $("#medTimes").value.split(",").map(s=>s.trim()).filter(s=>/^\d{1,2}:\d{2}$/.test(s));
+  state.meds.push({ id:uid(), name, type:$("#medType").value, dose:$("#medDose").value.trim(), times });
+  $("#medName").value=""; $("#medDose").value=""; $("#medTimes").value="";
+  save(); renderAll(); toast(name + " added");
+});
+function renderMeds(){
+  const list = $("#medList");
+  list.innerHTML = state.meds.length
+    ? state.meds.map(m=>`<div class="entry">
+        <div class="entry-icon ei-med">${ICONS.med}</div>
+        <div class="entry-body">
+          <div class="entry-title">${esc(m.name)}</div>
+          <div class="entry-sub">${esc(m.type)}${m.dose?" · "+esc(m.dose):""}${m.times.length?" · "+m.times.join(", "):""}</div>
+        </div>
+        <button class="entry-del" data-delmed="${m.id}" aria-label="Remove ${esc(m.name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg></button>
+      </div>`).join("")
+    : `<div class="empty"><b>No medications yet</b>Add your medications above to build your daily checklist.</div>`;
+  renderMedSelect();
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-delmed]");
+  if(!b) return;
+  state.meds = state.meds.filter(m=>m.id!==b.dataset.delmed);
+  save(); renderAll(); toast("Medication removed");
+});
+function checklistItems(){
+  const items = [];
+  state.meds.forEach(m=>{
+    (m.times.length ? m.times : ["—"]).forEach(t=>items.push({med:m, time:t}));
+  });
+  items.sort((a,b)=> (a.time==="—"?"99:99":a.time).localeCompare(b.time==="—"?"99:99":b.time));
+  return items;
+}
+function checklistHTML(){
+  const items = checklistItems();
+  if(!items.length) return `<div class="empty"><b>No scheduled medications</b>Add a medication with times to see your daily checklist.</div>`;
+  const today = dayKey(new Date());
+  const taken = state.taken[today] || [];
+  return items.map(it=>{
+    const key = it.med.id + "@" + it.time;
+    const done = taken.includes(key);
+    return `<div class="med-check">
+      <button class="check-btn ${done?"done":""}" data-take="${key}" aria-pressed="${done}" aria-label="Mark ${esc(it.med.name)} ${done?"not taken":"taken"}">
+        ${done?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 7"/></svg>':""}
+      </button>
+      <div class="mc-body">
+        <div class="mc-name ${done?"struck":""}">${esc(it.med.name)}</div>
+        <div class="mc-sub">${esc(it.med.dose||it.med.type)}</div>
+      </div>
+      ${it.time!=="—"?`<time>${it.time}</time>`:""}
+    </div>`;
+  }).join("");
+}
+function renderChecklists(){
+  $("#medChecklist").innerHTML = checklistHTML();
+  $("#dashMeds").innerHTML = checklistHTML();
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-take]");
+  if(!b) return;
+  const today = dayKey(new Date());
+  const key = b.dataset.take;
+  const arr = state.taken[today] = state.taken[today] || [];
+  const i = arr.indexOf(key);
+  if(i>=0) arr.splice(i,1); else arr.push(key);
+  save(); renderChecklists();
+});
+
+/* ================= Trends ================= */
+let trendDays = 7;
+$("#rangeSeg").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  trendDays = +b.dataset.days;
+  $$("#rangeSeg button").forEach(x=>x.classList.toggle("active",x===b));
+  renderTrends();
+});
+function renderTrends(){
+  $("#trendChart").innerHTML = lineChart(trendDays, 260);
+  $("#trendDonut").innerHTML = donut(trendDays);
+  const hint = "last " + trendDays + " days";
+  $("#tirRangeHint").textContent = hint;
+  $("#statRangeHint").textContent = hint;
+  $("#ctxRangeHint").textContent = hint;
+
+  const rs = readingsSince(trendDays), vals = rs.map(r=>r.mg);
+  if(!vals.length){
+    $("#trendStats").innerHTML = `<div class="empty" style="grid-column:1/-1"><b>No readings</b>Stats appear once you log readings in this range.</div>`;
+  } else {
+    const a = avg(vals), sd = stdev(vals), cv = a? (100*sd/a) : 0;
+    const perDay = (vals.length/trendDays).toFixed(1);
+    $("#trendStats").innerHTML = `
+      <div class="stat"><div class="s-label">Average</div><div class="s-value">${fmtG(a)}</div><div class="s-sub">${unitLabel()}</div></div>
+      <div class="stat"><div class="s-label">Est. A1C / GMI</div><div class="s-value">${vals.length>=5?eA1c(a).toFixed(1)+"%":"—"}</div><div class="s-sub">estimate only</div></div>
+      <div class="stat"><div class="s-label">Variability</div><div class="s-value">${cv?cv.toFixed(0)+"%":"—"}</div><div class="s-sub">CV (lower is steadier)</div></div>
+      <div class="stat"><div class="s-label">Highest</div><div class="s-value">${fmtG(Math.max(...vals))}</div><div class="s-sub">in this period</div></div>
+      <div class="stat"><div class="s-label">Lowest</div><div class="s-value">${fmtG(Math.min(...vals))}</div><div class="s-sub">in this period</div></div>
+      <div class="stat"><div class="s-label">Frequency</div><div class="s-value">${perDay}</div><div class="s-sub">readings / day</div></div>`;
+  }
+  // context table
+  const ctxs = ["Fasting","Before meal","After meal","Bedtime","Night","Other"];
+  const rows = ctxs.map(c=>{
+    const sub = rs.filter(r=>r.context===c);
+    if(!sub.length) return "";
+    const a = avg(sub.map(r=>r.mg));
+    const cls = classify(a);
+    return `<tr><td>${c}</td><td class="num">${fmtG(a,true)}</td><td class="num">${sub.length}</td><td><span class="badge ${cls}">${CLASS_LABEL[cls]}</span></td></tr>`;
+  }).join("");
+  $("#ctxTable").innerHTML = rows
+    ? `<table class="ctx-table"><thead><tr><th>Context</th><th>Average</th><th>Readings</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`
+    : `<div class="empty"><b>No context data</b>Tag readings (fasting, after meal…) to compare averages here.</div>`;
+}
+
+/* ================= Settings ================= */
+function renderSettings(){
+  $("#setName").value = state.settings.name;
+  $("#setDiaType").value = state.settings.diaType;
+  $("#setAge").value = state.settings.age || "";
+  $("#setGender").value = state.settings.gender || "Male";
+  $("#setHeight").value = state.settings.height || "";
+  $("#setStepGoal").value = stepGoal();
+  $("#setMedsMode").value = state.settings.medsMode || "Oral medication";
+  $("#aiKey").value = state.settings.aiKey || "";
+  renderReminders();
+  $("#setDoctor").value = state.settings.docName || "";
+  $("#setEmName").value = state.settings.emName || "";
+  $("#setEmPhone").value = state.settings.emPhone || "";
+  $$("#unitSeg button").forEach(b=>b.classList.toggle("active", b.dataset.v===state.settings.unit));
+  $("#setLow").value = state.settings.unit==="mmol" ? +(state.settings.low/MMOL).toFixed(1) : Math.round(state.settings.low);
+  $("#setHigh").value = state.settings.unit==="mmol" ? +(state.settings.high/MMOL).toFixed(1) : Math.round(state.settings.high);
+  $$(".unitLabel").forEach(el=>el.textContent = unitLabel());
+  updateStorageNote();
+}
+$("#unitSeg").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  state.settings.unit = b.dataset.v;
+  renderSettings();
+});
+$("#saveSettings").addEventListener("click", ()=>{
+  state.settings.name = $("#setName").value.trim();
+  state.settings.diaType = $("#setDiaType").value;
+  state.settings.age = parseInt($("#setAge").value,10) || null;
+  state.settings.gender = $("#setGender").value;
+  state.settings.height = parseFloat($("#setHeight").value) || null;
+  state.settings.stepGoal = parseInt($("#setStepGoal").value,10) || 7500;
+  state.settings.medsMode = $("#setMedsMode").value;
+  state.settings.docName = $("#setDoctor").value.trim();
+  state.settings.emName = $("#setEmName").value.trim();
+  state.settings.emPhone = $("#setEmPhone").value.trim();
+  const lo = fromInput($("#setLow").value), hi = fromInput($("#setHigh").value);
+  if(lo && hi && lo < hi){ state.settings.low = lo; state.settings.high = hi; }
+  else { toast("Check your target range — low must be below high"); return; }
+  save(); renderAll(); toast("Settings saved");
+});
+$("#exportCsv").addEventListener("click", ()=>{
+  if(!state.readings.length){ toast("No readings to export yet"); return; }
+  const rows = [["date","time","glucose_mg_dl","glucose_mmol_l","context","status","notes"]];
+  state.readings.slice().sort((a,b)=>a.ts-b.ts).forEach(r=>{
+    const d = new Date(r.ts);
+    rows.push([dayKey(d), pad(d.getHours())+":"+pad(d.getMinutes()), Math.round(r.mg), (r.mg/MMOL).toFixed(1), r.context, CLASS_LABEL[classify(r.mg)], (r.notes||"").replace(/"/g,"'")]);
+  });
+  const csv = rows.map(r=>r.map(c=>`"${c}"`).join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download = "glucoguide-readings.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("CSV downloaded");
+});
+let clearArmed = false;
+$("#clearData").addEventListener("click", ()=>{
+  if(!clearArmed){
+    clearArmed = true;
+    $("#clearData").textContent = "Tap again to confirm delete";
+    setTimeout(()=>{ clearArmed=false; $("#clearData").textContent="Delete all data"; }, 4000);
+    return;
+  }
+  clearArmed = false;
+  $("#clearData").textContent = "Delete all data";
+  state.readings=[];state.meds=[];state.doses=[];state.meals=[];state.activities=[];state.taken={};state.planLog={};state.vitals=[];state.dayRecords={};state.labs=[];state.steps={};
+  save(); renderAll(); toast("All data deleted");
+});
+$("#loadSample").addEventListener("click", ()=>{
+  const now = Date.now();
+  const ctxByHour = h => h<9 ? "Fasting" : (h<12 ? "Before meal" : (h<15 ? "After meal" : (h<20 ? "After meal" : "Bedtime")));
+  for(let d=13; d>=0; d--){
+    const n = 3 + Math.floor(Math.random()*2);
+    for(let i=0;i<n;i++){
+      const hour = [7,12,18,21][i] + Math.floor(Math.random()*2);
+      const base = hour<9 ? 105 : 140;
+      const mg = Math.max(58, Math.round(base + (Math.random()-0.45)*70));
+      const ts = now - d*864e5 - (24-hour)*3600e3 + Math.random()*1800e3;
+      if(ts <= now) state.readings.push({id:uid(),ts,mg,context:ctxByHour(hour),notes:""});
+    }
+  }
+  if(!state.meds.length){
+    state.meds.push({id:uid(),name:"Metformin",type:"Oral medication",dose:"500 mg",times:["08:00","20:00"]});
+  }
+  save(); renderAll(); toast("Sample data loaded — explore the trends!");
+});
+
+/* ================= 7-Day Plan (vegetarian meals + gym) ================= */
+const PLAN = [
+{ day:"Monday", theme:"Stable start: high-protein breakfast, controlled roti lunch, lower-carb dinner.", focus:"Full-body strength foundation",
+  sched:[
+    {t:"6:00 AM", n:"Glucose + hydration", d:"Check fasting glucose. Drink 400–500 ml water. Take medications exactly as prescribed.", c:"chk"},
+    {t:"6:30 AM", n:"Morning walk", d:"20–25 min easy walk — improves insulin sensitivity without exhausting you before work.", c:"walk"},
+    {t:"7:15 AM", n:"Breakfast", d:"Spinach besan chilla plate.", c:"meal"},
+    {t:"10:30 AM", n:"Snack", d:"½ cup roasted chana + unsweetened tea/coffee.", c:"meal"},
+    {t:"1:00 PM", n:"Lunch", d:"Dal-roti office box.", c:"meal"},
+    {t:"2:00 PM", n:"Post-lunch walk", d:"10–12 min office walk or stairs.", c:"walk"},
+    {t:"4:30 PM", n:"Pre-gym snack", d:"1 small guava/apple + 6 almonds.", c:"meal"},
+    {t:"5:45 PM", n:"Pre-gym safety check", d:"Check glucose if you monitor. Hydrate. Avoid intense gym if sugar is very high with ketones/symptoms.", c:"chk"},
+    {t:"6:00 PM", n:"Gym — full-body strength", d:"60 min session, details below.", c:"gym"},
+    {t:"7:30 PM", n:"Dinner", d:"Tofu vegetable bowl + optional small roti.", c:"meal"},
+    {t:"9:00 PM", n:"After-dinner walk + prep", d:"10 min slow walk. Prepare Tuesday snack box.", c:"walk"}],
+  recipes:[
+    {n:"Spinach Besan Chilla Plate", ing:["Besan ½ cup","Chopped spinach 1 cup","Onion/tomato/coriander","Plain curd ½ cup","Cucumber"], m:["Mix besan, vegetables, cumin, turmeric, ajwain, water.","Rest 5 minutes.","Cook 2 chillas on non-stick pan using minimal oil.","Eat with curd and cucumber. Avoid ketchup/sweet chutney."]},
+    {n:"Dal-Roti Office Box", ing:["2 small whole-wheat rotis","Moong/masoor dal 1 cup cooked","Mixed sabzi 2 cups","Salad 1–2 cups","Curd ½ cup"], m:["Cook dal with turmeric, cumin, ginger, tomato.","Prepare dry sabzi with cauliflower, beans, capsicum.","Pack rotis separately to avoid overeating.","Eat salad first, then dal/sabzi, then rotis."]},
+    {n:"Tofu Vegetable Bowl", ing:["Tofu 100–150 g","Broccoli/capsicum/beans/mushroom 2–3 cups","Clear soup","Optional 1 small roti"], m:["Press tofu and cube it.","Stir-fry vegetables first, then tofu.","Use garlic, pepper, cumin, chili, lemon.","Keep sauce unsweetened and low-sodium."]}],
+  gym:["6:00–6:10 — Treadmill warm-up, easy pace","6:10–6:22 — Leg press, 3 × 12, 60–75 sec rest","6:22–6:34 — Chest press, 3 × 12","6:34–6:46 — Seated row, 3 × 12","6:46–6:54 — Shoulder press 2 × 12 + plank 3 × 30 sec","6:54–7:00 — Easy cycling cooldown and breathing"],
+  prep:"Night before: chop chilla vegetables; cook extra dal; portion roasted chana into office container." },
+
+{ day:"Tuesday", theme:"Fiber-heavy day: oats, chana, and vegetables to reduce post-meal spikes.", focus:"Upper body strength + incline walking",
+  sched:[
+    {t:"6:00 AM", n:"Glucose + water", d:"Check fasting glucose. Drink water. Medication as prescribed.", c:"chk"},
+    {t:"6:30 AM", n:"Mobility + walk", d:"10 min stretching + 15 min easy walk.", c:"walk"},
+    {t:"7:15 AM", n:"Breakfast", d:"Vegetable oats with tofu.", c:"meal"},
+    {t:"10:30 AM", n:"Snack", d:"Sprouts salad, 1 cup.", c:"meal"},
+    {t:"1:00 PM", n:"Lunch", d:"Chana salad office box.", c:"meal"},
+    {t:"2:00 PM", n:"Post-lunch walk", d:"10 min walk.", c:"walk"},
+    {t:"4:30 PM", n:"Pre-gym snack", d:"Unsweetened buttermilk + 1 cup roasted makhana.", c:"meal"},
+    {t:"5:45 PM", n:"Pre-gym safety check", d:"Check glucose. Carry water and glucose source if needed.", c:"chk"},
+    {t:"6:00 PM", n:"Gym — upper body + incline walk", d:"60 min session, details below.", c:"gym"},
+    {t:"7:30 PM", n:"Dinner", d:"Paneer bhurji plate.", c:"meal"},
+    {t:"9:00 PM", n:"After-dinner walk + prep", d:"10 min walk; pack Wednesday lunch.", c:"walk"}],
+  recipes:[
+    {n:"Vegetable Oats with Tofu", ing:["Oats ½ cup dry","Tofu 75 g","Spinach/beans/carrot/capsicum 2 cups","Ginger, cumin, pepper"], m:["Dry roast oats lightly.","Cook vegetables with spices.","Add oats and water; simmer until thick.","Add tofu cubes near the end."]},
+    {n:"Chana Salad Office Box", ing:["Boiled chana 1 cup","Cucumber/tomato/capsicum/onion","Lemon","1 small roti or ½ cup quinoa","Buttermilk"], m:["Mix chana with chopped vegetables and lemon.","Add roasted cumin, coriander, chili, pepper.","Keep roti/quinoa portion fixed.","Avoid sweet chutney, sev, or fried toppings."]},
+    {n:"Paneer Bhurji Plate", ing:["Paneer 75–100 g","Capsicum/onion/tomato","1 small roti","Large salad"], m:["Crumble paneer.","Cook vegetables first, then add paneer.","Use turmeric, cumin, chili, coriander.","Keep oil limited to 1 tsp."]}],
+  gym:["6:00–6:10 — Incline treadmill walk, easy/moderate","6:10–6:22 — Lat pulldown, 3 × 12","6:22–6:34 — Dumbbell or machine chest press, 3 × 10–12","6:34–6:46 — Cable row, 3 × 12","6:46–6:54 — Biceps curl 2 × 12 + triceps pushdown 2 × 12","6:54–7:00 — Easy elliptical cooldown"],
+  prep:"Boil chana in bulk. Wash sprouts. Keep makhana roasted without sugar or honey." },
+
+{ day:"Wednesday", theme:"Legume day with strict rice/roti control and strong post-lunch walk.", focus:"Lower body + core",
+  sched:[
+    {t:"6:00 AM", n:"Glucose + water", d:"Check fasting glucose. Medication as prescribed.", c:"chk"},
+    {t:"6:30 AM", n:"Morning walk", d:"20 min easy walk.", c:"walk"},
+    {t:"7:15 AM", n:"Breakfast", d:"Moong dal chilla with curd.", c:"meal"},
+    {t:"10:30 AM", n:"Snack", d:"Cucumber/carrot sticks + hummus.", c:"meal"},
+    {t:"1:00 PM", n:"Lunch", d:"Rajma controlled plate.", c:"meal"},
+    {t:"2:00 PM", n:"Post-lunch walk", d:"10–12 min walk; do not skip — the rajma meal contains carbs.", c:"walk"},
+    {t:"4:30 PM", n:"Pre-gym snack", d:"8 almonds + 2 walnuts + unsweetened tea/coffee.", c:"meal"},
+    {t:"5:45 PM", n:"Pre-gym safety check", d:"Check glucose and hydrate.", c:"chk"},
+    {t:"6:00 PM", n:"Gym — lower body + core", d:"60 min session, details below.", c:"gym"},
+    {t:"7:30 PM", n:"Dinner", d:"Vegetable dal soup dinner.", c:"meal"},
+    {t:"9:00 PM", n:"After-dinner walk + stretch", d:"10 min walk + 5 min hip/calf stretch.", c:"walk"}],
+  recipes:[
+    {n:"Moong Dal Chilla", ing:["Moong dal ½ cup dry, soaked","Ginger/chili","Grated vegetables","Curd ½ cup"], m:["Soak moong overnight.","Blend with ginger and little water.","Add grated vegetables.","Cook 2 chillas with minimal oil."]},
+    {n:"Rajma Controlled Plate", ing:["Rajma ¾–1 cup cooked","½ cup brown rice OR 1 small roti, not both","2 cups vegetables","Salad"], m:["Cook rajma soft with tomato, ginger, spices.","Measure rice before packing.","Fill half lunch box with vegetables and salad.","Eat vegetables before rice/roti."]},
+    {n:"Vegetable Dal Soup Dinner", ing:["Moong dal ¾ cup cooked","Spinach/cabbage/bottle gourd","1 small roti","Pepper/lemon"], m:["Cook dal thin with vegetables.","Simmer until soup-like.","Add lemon and pepper.","Keep roti to one small piece only."]}],
+  gym:["6:00–6:10 — Stationary cycle warm-up","6:10–6:22 — Goblet squat or bodyweight squat, 3 × 10","6:22–6:34 — Romanian deadlift, 3 × 10","6:34–6:44 — Leg curl, 3 × 12","6:44–6:52 — Calf raise, 3 × 15","6:52–7:00 — Dead bug 3 × 10/side + treadmill cooldown"],
+  prep:"Soak moong and rajma in advance. Pre-measure brown rice to avoid accidental large portions." },
+
+{ day:"Thursday", theme:"Lower-carb dinner day with cardio and recovery emphasis.", focus:"Zone-2 cardio + mobility",
+  sched:[
+    {t:"6:00 AM", n:"Glucose + water", d:"Check fasting glucose. Medication as prescribed.", c:"chk"},
+    {t:"6:30 AM", n:"Walk + breathing", d:"15–20 min easy walk + 5 min breathing.", c:"walk"},
+    {t:"7:15 AM", n:"Breakfast", d:"Curd protein bowl.", c:"meal"},
+    {t:"10:30 AM", n:"Snack", d:"½ cup roasted peanuts or roasted chana.", c:"meal"},
+    {t:"1:00 PM", n:"Lunch", d:"Sambar + millet plate.", c:"meal"},
+    {t:"2:00 PM", n:"Post-lunch walk", d:"10 min walk.", c:"walk"},
+    {t:"4:30 PM", n:"Pre-gym snack", d:"75–100 g tofu/paneer cubes with pepper.", c:"meal"},
+    {t:"5:45 PM", n:"Pre-gym safety check", d:"Check glucose. Stop if shaky, dizzy, confused, or unusually weak.", c:"chk"},
+    {t:"6:00 PM", n:"Gym — zone-2 cardio + mobility", d:"60 min session, details below.", c:"gym"},
+    {t:"7:30 PM", n:"Dinner", d:"Soy chunks vegetable sabzi.", c:"meal"},
+    {t:"9:00 PM", n:"After-dinner walk + prep", d:"10 min walk; prep Friday lunch.", c:"walk"}],
+  recipes:[
+    {n:"Curd Protein Bowl", ing:["Greek yogurt/thick curd ¾–1 cup","Chia/flax 1 tbsp","Almonds 6–8","½ small apple or berries","Cinnamon"], m:["Use unsweetened curd only.","Mix seeds and cinnamon.","Add controlled fruit portion.","No honey, jaggery, sugar, or granola."]},
+    {n:"Sambar + Millet Plate", ing:["Vegetable sambar 1–1½ cups","Cooked millet ½–¾ cup OR 2 small millet rotis","Cabbage/beans sabzi 2 cups"], m:["Use extra vegetables in sambar.","Keep millet measured.","Pack salad separately.","Avoid dosa/idli addition with this meal."]},
+    {n:"Soy Chunks Sabzi", ing:["Soy chunks ½–¾ cup cooked","Capsicum/onion/tomato","1 small roti","2 cups vegetables"], m:["Soak soy chunks in hot water, rinse well.","Cook with spices and vegetables.","Keep gravy light, no cream.","Serve with one small roti only."]}],
+  gym:["6:00–6:05 — Warm-up walk","6:05–6:40 — Treadmill, elliptical, or cycle at conversational pace","6:40–6:55 — Mobility: hamstrings, hips, chest, back, calves","6:55–7:00 — Slow breathing cooldown"],
+  prep:"Cook sambar vegetables ahead. Soak and rinse soy chunks to improve texture." },
+
+{ day:"Friday", theme:"Balanced end-of-week plan to avoid cafeteria/junk-food drift.", focus:"Full-body circuit, moderate intensity",
+  sched:[
+    {t:"6:00 AM", n:"Glucose + water", d:"Check fasting glucose. Medication as prescribed.", c:"chk"},
+    {t:"6:30 AM", n:"Morning walk", d:"20–25 min easy walk.", c:"walk"},
+    {t:"7:15 AM", n:"Breakfast", d:"Vegetable dalia with tofu/paneer.", c:"meal"},
+    {t:"10:30 AM", n:"Snack", d:"1 orange or small pear + 5–6 almonds.", c:"meal"},
+    {t:"1:00 PM", n:"Lunch", d:"Tofu roti plate.", c:"meal"},
+    {t:"2:00 PM", n:"Post-lunch walk", d:"10 min walk.", c:"walk"},
+    {t:"4:30 PM", n:"Pre-gym snack", d:"1 cup sprouts OR roasted makhana.", c:"meal"},
+    {t:"5:45 PM", n:"Pre-gym safety check", d:"Check glucose. Hydrate.", c:"chk"},
+    {t:"6:00 PM", n:"Gym — full-body circuit", d:"60 min session, details below.", c:"gym"},
+    {t:"7:30 PM", n:"Dinner", d:"Vegetable moong khichdi, small portion.", c:"meal"},
+    {t:"9:00 PM", n:"After-dinner walk", d:"10–15 min walk.", c:"walk"}],
+  recipes:[
+    {n:"Vegetable Dalia", ing:["Dalia ½–¾ cup cooked","Spinach/carrot/beans/capsicum","Tofu or paneer 75 g","Curd ½ cup"], m:["Cook vegetables with spices.","Add measured dalia and water.","Simmer until soft.","Add tofu/paneer for protein."]},
+    {n:"Tofu Roti Plate", ing:["2 small rotis","Tofu curry 100–150 g","2 cups sabzi","Salad","Buttermilk"], m:["Make tomato-based tofu curry.","Use no cream and minimal oil.","Pack two small rotis only.","Eat salad and tofu before rotis."]},
+    {n:"Vegetable Moong Khichdi", ing:["Moong dal","Small rice portion","Vegetables 2 cups","Curd ½ cup"], m:["Use more dal and vegetables than rice.","Keep cooked portion to ¾–1 cup.","Add cucumber salad.","Walk after dinner."]}],
+  gym:["6:00–6:10 — Warm-up walk/cycle","6:10–6:48 — 3 rounds circuit: leg press 12, chest press 12, seated row 12, dumbbell deadlift 10, step-ups 10/leg, plank 30 sec","6:48–6:58 — Easy treadmill/cycle","6:58–7:00 — Breathing cooldown"],
+  prep:"Pack Friday lunch before sleeping Thursday to avoid buying outside food." },
+
+{ day:"Saturday", theme:"Weekend structure: enjoy variety without losing carb control.", focus:"Strength + posture",
+  sched:[
+    {t:"7:00 AM", n:"Glucose + water", d:"Check fasting glucose. Medication as prescribed.", c:"chk"},
+    {t:"7:30 AM", n:"Breakfast", d:"Ragi dosa or mixed dal adai.", c:"meal"},
+    {t:"10:30 AM", n:"Snack", d:"Unsweetened buttermilk + 8–10 almonds.", c:"meal"},
+    {t:"1:00 PM", n:"Lunch", d:"Vegetarian thali, controlled.", c:"meal"},
+    {t:"2:00 PM", n:"Post-lunch walk", d:"15 min relaxed walk.", c:"walk"},
+    {t:"4:30 PM", n:"Pre-gym snack", d:"Hummus + cucumber/carrot sticks OR roasted chana.", c:"meal"},
+    {t:"5:45 PM", n:"Pre-gym safety check", d:"Check glucose. Weekend meals may be heavier, so do not skip this.", c:"chk"},
+    {t:"6:00 PM", n:"Gym — strength + posture", d:"60 min session, details below.", c:"gym"},
+    {t:"7:30 PM", n:"Dinner", d:"Paneer/tofu tikka plate.", c:"meal"},
+    {t:"9:00 PM", n:"After-dinner walk + prep", d:"10 min walk; prep Sunday chole/chilla.", c:"walk"}],
+  recipes:[
+    {n:"Ragi Dosa / Mixed Dal Adai", ing:["2 small ragi dosas OR 2 mixed dal adai","Sambar 1 cup","Coconut chutney 1–2 tsp"], m:["Keep dosa size small.","Use sambar as protein/fiber support.","Limit chutney; avoid potato masala.","No sweetened coffee/tea."]},
+    {n:"Controlled Vegetarian Thali", ing:["2 small rotis","1 cup dal","2 cups sabzi","Large salad","Curd ½ cup"], m:["No sweet dish.","No fried papad.","No white rice add-on.","Eat vegetables first."]},
+    {n:"Paneer/Tofu Tikka Plate", ing:["Paneer/tofu 100–150 g","Capsicum/onion","Vegetable soup","Large salad"], m:["Marinate with curd, spices, lemon.","Grill or air-fry; do not deep-fry.","Avoid sweet sauces.","Add 1 small roti only if needed."]}],
+  gym:["6:00–6:10 — Warm-up treadmill/cycle","6:10–6:22 — Squat or leg press, 3 × 10","6:22–6:34 — Lat pulldown, 3 × 12","6:34–6:46 — Chest press, 3 × 12","6:46–6:54 — Cable row, 3 × 12","6:54–7:00 — Farmer carry 3 rounds + cooldown"],
+  prep:"Use air fryer/grill. Keep weekend portions measured before eating." },
+
+{ day:"Sunday", theme:"Recovery + reset day: lighter dinner and meal prep for the next week.", focus:"Recovery cardio + flexibility",
+  sched:[
+    {t:"7:00 AM", n:"Glucose + water", d:"Check fasting glucose. Medication as prescribed.", c:"chk"},
+    {t:"7:30 AM", n:"Breakfast", d:"Sprouts + chilla combo.", c:"meal"},
+    {t:"10:30 AM", n:"Snack", d:"1 small apple/guava + 1 tbsp unsweetened peanut butter or 6 almonds.", c:"meal"},
+    {t:"1:00 PM", n:"Lunch", d:"Chole controlled plate.", c:"meal"},
+    {t:"2:00 PM", n:"Post-lunch walk", d:"15 min walk.", c:"walk"},
+    {t:"4:30 PM", n:"Pre-gym snack", d:"Roasted chana or makhana + water.", c:"meal"},
+    {t:"5:45 PM", n:"Pre-gym safety check", d:"Check glucose. Keep workout lighter if tired.", c:"chk"},
+    {t:"6:00 PM", n:"Gym — recovery cardio + flexibility", d:"60 min session, details below.", c:"gym"},
+    {t:"7:30 PM", n:"Dinner", d:"Light soup + protein.", c:"meal"},
+    {t:"9:00 PM", n:"Weekly preparation", d:"Pack Monday snack, soak dal/chana, chop vegetables, portion nuts.", c:"walk"}],
+  recipes:[
+    {n:"Sprouts + Chilla Combo", ing:["Sprouts 1 cup","1–2 besan/moong chillas","Curd ½ cup","Cucumber/lemon"], m:["Make sprouts salad with lemon, onion, tomato.","Cook chilla with minimal oil.","Eat curd for extra protein.","Avoid sweet chutney."]},
+    {n:"Chole Controlled Plate", ing:["Chole ¾–1 cup","1 small roti OR ½ cup brown rice","2 cups salad/vegetables","Curd ½ cup"], m:["Use tomato/spice base, no cream.","Measure chole portion.","Choose either roti or rice, not both.","Walk after lunch."]},
+    {n:"Light Soup + Protein", ing:["Vegetable clear soup or dal soup","Tofu/paneer 100 g OR dal 1 cup","2 cups stir-fried vegetables"], m:["Keep dinner low-carb.","Skip rice.","Use lemon/pepper/herbs.","Take 1 small roti only if your medication plan requires carbs."]}],
+  gym:["6:00–6:10 — Easy cycle","6:10–6:35 — Treadmill walk, comfortable pace","6:35–6:55 — Stretching/yoga mobility: hips, hamstrings, calves, chest, back","6:55–7:00 — Breathing cooldown"],
+  prep:"Cook two legumes, roast snacks, wash/chop vegetables, prepare sugar-free chutney, portion seven snack boxes." }
+];
+
+const SHOPPING = [
+["Proteins", ["Tofu: 700–900 g/week","Paneer (preferably low-fat): 400–500 g/week","Plain curd/Greek yogurt: 1.5–2 kg/week","Moong dal: 500 g","Masoor dal: 500 g","Chana: 500 g dry or 4–5 cups boiled","Rajma: 250–350 g dry","Soy chunks: 250 g","Sprouts: 4–5 cups prepared","Hummus: 1 small tub or homemade"]],
+["Controlled carbs", ["Whole wheat atta for small rotis","Oats: 500 g","Dalia/broken wheat: 500 g","Brown rice: 500 g","Quinoa or millet/ragi: 500 g","Besan: 500 g","Ragi flour or mixed-dal dosa batter ingredients"]],
+["Non-starchy vegetables", ["Spinach/methi: 4 bunches","Cucumber: 7–10","Tomato: 8–10","Capsicum: 5–6","Cauliflower: 1–2 heads","Cabbage: 1 head","Green beans: 500 g","Broccoli: 2 heads","Bottle/ridge gourd: 2–3","Okra: 500 g","Mushrooms: 400–500 g","Carrot: 5–6 (controlled portions)","Onion, coriander, lemon, ginger, garlic, green chili"]],
+["Snacks and fats", ["Roasted chana: 500 g","Makhana: 250–300 g","Almonds: 250 g","Walnuts: 150 g","Peanuts: 250 g","Chia/flax seeds: 150 g","Unsweetened peanut butter: 1 jar","Olive/mustard/groundnut oil — measured teaspoons"]],
+["Fruit and drinks", ["Guava: 3–4","Apples: 3–4","Oranges/pears: 2–3","Unsweetened buttermilk ingredients","Tea/coffee without sugar","Cinnamon, cumin, turmeric, pepper, ajwain, methi seeds"]],
+["Gym and safety kit", ["Water bottle","Glucose meter/CGM supplies","Ketone strips if your clinician recommends them","Medical ID card/bracelet","Fast-acting glucose source if you use insulin or sulfonylurea-type tablets","Small towel and comfortable shoes"]]];
+
+const SAFETY = [
+["Before gym","Check glucose before the 6 PM gym session. Carry water and a fast-acting glucose source if your medicines can cause low sugar."],
+["High sugar + ketones","If glucose is above 240–250 mg/dL, check ketones if available. Do not exercise if ketones are present or you feel unwell."],
+["During gym","Stop immediately for shakiness, sweating, confusion, dizziness, chest pain, severe breathlessness, or unusual weakness."],
+["After gym","Have dinner within 30–60 minutes after gym. Do not skip dinner after strength training."],
+["Urgent symptoms","Seek urgent care for vomiting, confusion, severe weakness, chest pain, trouble breathing, fruity breath, severe dehydration, or very high sugar that is not coming down."]];
+
+const RULES = [
+["Plate method","For lunch and dinner: ½ plate non-starchy vegetables, ¼ protein, ¼ controlled carbohydrate."],
+["Carb consistency","Keep carbohydrate portions similar day to day unless your clinician/dietitian changes your plan."],
+["Cooking oil","Use 1–2 tsp oil per cooked meal portion. Avoid deep-frying."],
+["Food order","Eat salad/vegetables first, then protein, then roti/rice/millet last."],
+["Hydration","Drink water throughout the day. High sugar can increase urination and dehydration risk."],
+["Medication","Do not stop or alter insulin/tablets based on this plan. Follow your prescription and glucose correction plan."]];
+
+/* ---- plan state & helpers ---- */
+function todayPlanIdx(){ return (new Date().getDay() + 6) % 7; } // Mon=0 … Sun=6
+let planIdx = todayPlanIdx();
+
+function planDateForIdx(idx){
+  // The date in the current week (Mon–Sun) that this plan day refers to
+  const now = new Date();
+  const diff = idx - todayPlanIdx();
+  return dayKey(new Date(now.getTime() + diff * 864e5));
+}
+function planLogFor(dateKeyStr){ return state.planLog[dateKeyStr] || {}; }
+function adherenceFor(dateKeyStr, idx){
+  const day = PLAN[idx], log = planLogFor(dateKeyStr);
+  let done = 0;
+  day.sched.forEach((_, i) => { if(log["i"+i] === "done") done++; });
+  return { done, total: day.sched.length, pct: Math.round(100 * done / day.sched.length) };
+}
+
+function renderDayTabs(){
+  const tIdx = todayPlanIdx();
+  $("#dayTabs").innerHTML = PLAN.map((d,i)=>
+    `<button class="day-tab ${i===planIdx?"active":""} ${i===tIdx?"today":""}" data-plan-day="${i}">${d.day.slice(0,3)}</button>`
+  ).join("");
+}
+function renderPlan(){
+  renderDayTabs();
+  const day = PLAN[planIdx];
+  const dk = planDateForIdx(planIdx);
+  const log = planLogFor(dk);
+  const isToday = planIdx === todayPlanIdx();
+  const isFuture = planIdx > todayPlanIdx();
+
+  $("#planDayTitle").textContent = day.day + (isToday ? " · today" : "");
+  $("#planTheme").textContent = day.theme;
+  $("#planFocus").textContent = "Gym: " + day.focus;
+
+  const adh = adherenceFor(dk, planIdx);
+  $("#planAdhFill").style.width = adh.pct + "%";
+  $("#planAdhText").textContent = isFuture
+    ? "Upcoming day — items unlock as the week reaches it"
+    : `${adh.done} of ${adh.total} items followed`;
+  $("#planAdhPct").innerHTML = isFuture ? "" : `<b>${adh.pct}%</b> adherence`;
+
+  $("#planSchedule").innerHTML = day.sched.map((it,i)=>{
+    const st = log["i"+i] || "";
+    return `<div class="sched-item ${st}">
+      <div class="sched-time">${it.t}</div>
+      <div class="sched-body">
+        <div class="sched-title">${esc(it.n)}<span class="cat-tag cat-${it.c}">${it.c==="chk"?"check":it.c}</span></div>
+        <div class="sched-detail">${esc(it.d)}</div>
+      </div>
+      <div class="sched-actions">
+        <button class="check-btn ${st==="done"?"done":""}" data-plan-item="${i}" data-plan-set="done" data-plan-date="${dk}" aria-pressed="${st==="done"}" aria-label="Mark ${esc(it.n)} done" ${isFuture?"disabled":""}>
+          ${st==="done"?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 7"/></svg>':""}
+        </button>
+        <button class="skip-btn ${st==="skipped"?"skipped":""}" data-plan-item="${i}" data-plan-set="skipped" data-plan-date="${dk}" aria-pressed="${st==="skipped"}" aria-label="Mark ${esc(it.n)} skipped" ${isFuture?"disabled":""}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+
+  $("#planRecipes").innerHTML = `<div class="recipe-cols">` + day.recipes.map(r=>
+    `<details class="fold"><summary>${esc(r.n)}</summary><div class="fold-body">
+      <h4>Ingredients / portion</h4><ul>${r.ing.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+      <h4>Method</h4><ul>${r.m.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    </div></details>`).join("") + `</div>`;
+
+  $("#planGym").innerHTML = `<ul style="padding-left:18px;font-size:14px;color:var(--ink-2);line-height:1.7">` +
+    day.gym.map(g=>`<li>${esc(g)}</li>`).join("") + `</ul>`;
+  $("#planPrep").textContent = day.prep;
+
+  renderSaveDayCard();
+  $("#planShopping").innerHTML = SHOPPING.map(([cat,items])=>
+    `<h4>${cat}</h4><ul>${items.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`).join("");
+  $("#planSafety").innerHTML = SAFETY.map(([t,d])=>`<h4>${t}</h4><p style="margin:0 0 6px">${esc(d)}</p>`).join("");
+  $("#planRules").innerHTML = RULES.map(([t,d])=>`<h4>${t}</h4><p style="margin:0 0 6px">${esc(d)}</p>`).join("");
+}
+document.addEventListener("click", e=>{
+  const tab = e.target.closest("[data-plan-day]");
+  if(tab){ planIdx = +tab.dataset.planDay; renderPlan(); return; }
+  const btn = e.target.closest("[data-plan-item]");
+  if(!btn || btn.disabled) return;
+  const dk = btn.dataset.planDate, i = btn.dataset.planItem, setTo = btn.dataset.planSet;
+  const log = state.planLog[dk] = state.planLog[dk] || {};
+  log["i"+i] = (log["i"+i] === setTo) ? "" : setTo; // toggle
+  if(!log["i"+i]) delete log["i"+i];
+  save();
+  renderPlan(); renderDashPlan(); renderAdherence();
+});
+
+/* ---- dashboard plan card ---- */
+function renderDashPlan(){
+  const idx = todayPlanIdx();
+  const day = PLAN[idx];
+  const dk = dayKey(new Date());
+  const log = planLogFor(dk);
+  const adh = adherenceFor(dk, idx);
+
+  const pending = day.sched
+    .map((it,i)=>({it,i}))
+    .filter(x => !log["i"+x.i])
+    .slice(0,3);
+
+  $("#dashPlan").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-weight:600;font-size:14px">${day.day} — ${esc(day.focus)}</span>
+      <span style="font-family:var(--font-mono);font-size:13px;color:var(--ink-2)">${adh.done}/${adh.total} · ${adh.pct}%</span>
+    </div>
+    <div class="adh-bar"><span style="width:${adh.pct}%"></span></div>
+    ${pending.length
+      ? pending.map(x=>`<div class="next-up"><time>${x.it.t}</time><span>${esc(x.it.n)} — <span style="color:var(--ink-3)">${esc(x.it.d)}</span></span></div>`).join("")
+      : `<p style="font-size:13.5px;color:var(--green);font-weight:600;margin-top:8px">Every item handled for today — well done.</p>`}`;
+}
+
+/* ---- save day record ---- */
+function buildDayRecord(dk, idx){
+  const day = PLAN[idx], log = planLogFor(dk);
+  const missed = [], skipped = [], doneList = [];
+  day.sched.forEach((it,i)=>{
+    const st = log["i"+i];
+    if(st === "done") doneList.push(it.n);
+    else if(st === "skipped") skipped.push(it.n);
+    else missed.push(it.n);
+  });
+  const pct = Math.round(100 * doneList.length / day.sched.length);
+  return { pct, done: doneList.length, total: day.sched.length, missed, skipped, day: day.day };
+}
+$("#saveDayBtn").addEventListener("click", ()=>{
+  const idx = planIdx;
+  if(idx > todayPlanIdx()){ toast("You can't save a future day"); return; }
+  const dk = planDateForIdx(idx);
+  const rec = buildDayRecord(dk, idx);
+  rec.note = $("#dayNote").value.trim();
+  rec.savedAt = Date.now();
+  state.dayRecords[dk] = rec;
+  $("#dayNote").value = "";
+  save(); renderPlan(); renderDashDayReport(); renderAdherence();
+  toast("Day saved — " + rec.pct + "% adherence recorded");
+});
+function renderSaveDayCard(){
+  const idx = planIdx, isFuture = idx > todayPlanIdx();
+  const dk = planDateForIdx(idx);
+  const rec = state.dayRecords[dk];
+  $("#saveDayBtn").textContent = rec ? "Update this day's record" : (idx === todayPlanIdx() ? "Save today's record" : "Save " + PLAN[idx].day + "'s record");
+  $("#saveDayBtn").disabled = isFuture;
+  $("#saveDayBtn").style.opacity = isFuture ? ".5" : "1";
+  $("#savedFlagSlot").innerHTML = rec
+    ? `<span class="saved-flag">✓ Saved at ${fmtTime(rec.savedAt)} · ${rec.pct}%</span>` : "";
+  if(rec && rec.note) $("#dayNote").value = rec.note;
+
+  // recent records (latest 7 saved)
+  const entries = Object.entries(state.dayRecords).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);
+  $("#recordsList").innerHTML = entries.length
+    ? entries.map(([d,r])=>{
+        const notFollowed = r.missed.concat(r.skipped);
+        return `<div class="rec-item">
+          <div class="rec-date">${d.slice(5)}</div>
+          <div class="rec-body">
+            <div><b>${r.day}</b> — <span class="rec-pct">${r.pct}%</span> (${r.done}/${r.total} followed)</div>
+            ${notFollowed.length ? `<div class="rec-missed">Not followed: ${notFollowed.map(esc).join(", ")}</div>` : `<div style="color:var(--green);font-size:12.5px;font-weight:600">Full day followed ✓</div>`}
+            ${r.note ? `<div class="rec-note">"${esc(r.note)}"</div>` : ""}
+          </div>
+        </div>`;
+      }).join("")
+    : `<div class="empty"><b>No saved records yet</b>Save a day to start your permanent adherence history.</div>`;
+}
+function renderDashDayReport(){
+  const el = $("#dashDayReport");
+  const entries = Object.entries(state.dayRecords).sort((a,b)=>b[0].localeCompare(a[0]));
+  if(!entries.length){
+    el.innerHTML = `<div class="empty"><b>No day saved yet</b>At day's end, open My Plan and tap "Save today's record" — your adherence and missed items will appear here.</div>`;
+    return;
+  }
+  const [d, r] = entries[0];
+  const isToday = d === dayKey(new Date());
+  const notFollowed = r.missed.concat(r.skipped);
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+      <span style="font-weight:600;font-size:14.5px">${isToday ? "Today" : r.day + ", " + d.slice(5)} — <span class="rec-pct">${r.pct}%</span> adherence</span>
+      <span class="saved-flag">✓ Saved</span>
+    </div>
+    <div class="adh-bar"><span style="width:${r.pct}%"></span></div>
+    ${notFollowed.length
+      ? `<div class="rec-missed" style="font-size:13px;margin-top:4px"><b>Not followed (${notFollowed.length}):</b> ${notFollowed.map(esc).join(", ")}</div>`
+      : `<div style="color:var(--green);font-size:13.5px;font-weight:600;margin-top:4px">You followed the complete plan ✓</div>`}
+    ${r.note ? `<div class="rec-note" style="margin-top:4px">"${esc(r.note)}"</div>` : ""}`;
+}
+
+/* ---- adherence history (Trends) ---- */
+function renderAdherence(){
+  const bars = [];
+  let daysWithLogs = 0, sumPct = 0;
+  for(let d=6; d>=0; d--){
+    const date = new Date(Date.now() - d*864e5);
+    const dk = dayKey(date);
+    const idx = (date.getDay() + 6) % 7;
+    const adh = adherenceFor(dk, idx);
+    const hasAny = Object.keys(planLogFor(dk)).length > 0;
+    if(hasAny){ daysWithLogs++; sumPct += adh.pct; }
+    bars.push({lbl: PLAN[idx].day.slice(0,2), pct: adh.pct, hasAny, isToday: d===0});
+  }
+  $("#adhWeek").innerHTML = bars.map(b=>`
+    <div class="wb">
+      <span class="pct">${b.hasAny ? b.pct + "%" : "–"}</span>
+      <span class="bar ${!b.hasAny ? "empty-adh" : (b.pct < 60 ? "low-adh" : "")}" style="height:${b.hasAny ? Math.max(4, b.pct) : 4}%"></span>
+      <span class="lbl">${b.lbl}${b.isToday ? " •" : ""}</span>
+    </div>`).join("");
+
+  // streak: consecutive days (ending today) with >= 70% adherence
+  let streak = 0;
+  for(let d=0; d<60; d++){
+    const date = new Date(Date.now() - d*864e5);
+    const dk = dayKey(date), idx = (date.getDay() + 6) % 7;
+    const adh = adherenceFor(dk, idx);
+    if(adh.pct >= 70) streak++;
+    else { if(d===0 && Object.keys(planLogFor(dk)).length === 0) continue; break; } // today in progress doesn't break streak
+  }
+  const today = adherenceFor(dayKey(new Date()), todayPlanIdx());
+  $("#adhStats").innerHTML = `
+    <div class="stat"><div class="s-label">Today</div><div class="s-value">${today.pct}%</div><div class="s-sub">${today.done}/${today.total} items</div></div>
+    <div class="stat"><div class="s-label">7-day avg</div><div class="s-value">${daysWithLogs ? Math.round(sumPct/daysWithLogs) + "%" : "—"}</div><div class="s-sub">days you tracked</div></div>
+    <div class="stat"><div class="s-label">Streak</div><div class="s-value">${streak}</div><div class="s-sub">days ≥ 70% adherence</div></div>`;
+}
+
+/* ================= Steps tracker ================= */
+function stepGoal(){ return state.settings.stepGoal || 7500; }
+function stepsFor(dk){ return state.steps[dk] || 0; }
+$("#saveSteps").addEventListener("click", ()=>{
+  const n = parseInt($("#stepsInput").value,10);
+  if(isNaN(n) || n < 0){ toast("Enter today's step count"); return; }
+  state.steps[dayKey(new Date())] = n;
+  $("#stepsInput").value = "";
+  save(); renderSteps(); renderGettingStarted(); toast("Steps saved");
+});
+function renderSteps(){
+  const today = stepsFor(dayKey(new Date()));
+  const goal = stepGoal();
+  const frac = Math.min(1, goal ? today/goal : 0);
+  const R = 44, C = 2*Math.PI*R;
+  $("#stepGoalHint").textContent = "goal " + goal.toLocaleString() + "/day";
+  $("#stepsRing").innerHTML = `
+    <svg width="118" height="118" viewBox="0 0 118 118" role="img" aria-label="${today} of ${goal} steps today">
+      <circle r="${R}" cx="59" cy="59" fill="none" stroke="#EDF2F0" stroke-width="12"/>
+      <circle r="${R}" cx="59" cy="59" fill="none" stroke="${frac>=1?"#2F9E63":"#0E7C66"}" stroke-width="12" stroke-linecap="round"
+        stroke-dasharray="${(frac*C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 59 59)"/>
+      <text x="59" y="56" text-anchor="middle" font-size="19" font-weight="600" fill="#13302B" font-family="Spline Sans Mono,monospace">${today.toLocaleString()}</text>
+      <text x="59" y="74" text-anchor="middle" font-size="10" fill="#7C918D" font-family="Instrument Sans,sans-serif">${frac>=1?"goal met ✓":"steps"}</text>
+    </svg>`;
+  // weekly bars (Trends)
+  const bars = [];
+  for(let d=6; d>=0; d--){
+    const date = new Date(Date.now() - d*864e5);
+    const n = stepsFor(dayKey(date));
+    bars.push({lbl: ["Su","Mo","Tu","We","Th","Fr","Sa"][date.getDay()], n, isToday: d===0});
+  }
+  const max = Math.max(goal, ...bars.map(b=>b.n), 1);
+  $("#stepsWeek").innerHTML = bars.map(b=>`
+    <div class="wb">
+      <span class="pct">${b.n ? (b.n>=1000 ? (b.n/1000).toFixed(1)+"k" : b.n) : "–"}</span>
+      <span class="bar ${!b.n?"empty-adh":(b.n>=goal?"":"low-adh")}" style="height:${Math.max(4,100*b.n/max)}%"></span>
+      <span class="lbl">${b.lbl}${b.isToday?" •":""}</span>
+    </div>`).join("");
+}
+
+/* ================= Lab results ================= */
+function initLabSelect(){
+  $("#labType").innerHTML = Object.entries(LAB_TYPES).map(([k,[n]])=>`<option value="${k}">${n}</option>`).join("");
+  const upd = ()=>{ $("#labUnit").textContent = "(" + LAB_TYPES[$("#labType").value][1] + ")"; };
+  $("#labType").addEventListener("change", upd); upd();
+}
+$("#saveLab").addEventListener("click", ()=>{
+  const v = parseFloat($("#labValue").value);
+  if(isNaN(v)){ toast("Enter the lab result value"); $("#labValue").focus(); return; }
+  state.labs.push({ id:uid(), ts:tsFrom($("#vDate").value,$("#vTime").value), type:$("#labType").value, value:v });
+  $("#labValue").value = "";
+  save(); renderAll(); toast(LAB_TYPES[$("#labType").value][0] + " saved");
+});
+function renderLabsLatest(){
+  const latest = {};
+  state.labs.slice().sort((a,b)=>a.ts-b.ts).forEach(l=>{ latest[l.type]=l; });
+  const items = Object.values(latest).sort((a,b)=>b.ts-a.ts).slice(0,8);
+  $("#labsLatest").innerHTML = items.length
+    ? `<div class="tir-legend" style="flex-direction:column;gap:6px">` + items.map(l=>{
+        const [n,u] = LAB_TYPES[l.type] || [l.type,""];
+        return `<span>${esc(n)}: <b>${l.value} ${u}</b> <span style="color:var(--ink-3)">· ${fmtDay(l.ts)}</span></span>`;
+      }).join("") + `</div>`
+    : `<p style="font-size:12.5px;color:var(--ink-3)">No lab results yet — add them in Log → Vitals.</p>`;
+}
+
+/* ================= Share summary (family) ================= */
+$("#shareSummary").addEventListener("click", async ()=>{
+  const today = dayKey(new Date());
+  const rToday = state.readings.filter(r=>dayKey(new Date(r.ts))===today);
+  const last = state.readings.slice().sort((a,b)=>b.ts-a.ts)[0];
+  const {c, total} = tirCounts(14);
+  const rec = state.dayRecords[today];
+  const lines = [
+    "🩺 " + (state.settings.name || "GlucoGuide") + " — health summary, " + new Date().toLocaleDateString(),
+    last ? "Latest glucose: " + fmtG(last.mg,true) + " (" + CLASS_LABEL[classify(last.mg)] + ", " + fmtDay(last.ts) + " " + fmtTime(last.ts) + ")" : "No glucose readings yet today",
+    rToday.length ? "Today: " + rToday.length + " readings, avg " + fmtG(avg(rToday.map(r=>r.mg)),true) : "",
+    total ? "Time in range (14d): " + Math.round(100*c.in/total) + "%" : "",
+    "Steps today: " + stepsFor(today).toLocaleString() + " / " + stepGoal().toLocaleString(),
+    rec ? "Plan adherence today: " + rec.pct + "%" + (rec.missed.length ? " (missed: " + rec.missed.join(", ") + ")" : " — full plan followed ✓") : "Day record not saved yet",
+    "— sent from GlucoGuide (data stays on my phone)"
+  ].filter(Boolean);
+  const text = lines.join("\n");
+  try{
+    if(NATIVE){ Android.shareText(text); }
+    else if(navigator.share){ await navigator.share({text}); }
+    else { await navigator.clipboard.writeText(text); toast("Summary copied — paste it in WhatsApp/SMS"); }
+  }catch(e){ /* user cancelled */ }
+});
+
+/* ================= Getting started checklist ================= */
+function renderGettingStarted(){
+  const steps = [
+    ["Set up your profile", !!state.settings.name],
+    ["Log your first glucose reading", state.readings.length > 0],
+    ["Add your medications", state.meds.length > 0],
+    ["Save today's steps", stepsFor(dayKey(new Date())) > 0],
+    ["Save a daily plan record", Object.keys(state.dayRecords).length > 0]
+  ];
+  const allDone = steps.every(s=>s[1]);
+  $("#gsCard").hidden = allDone;
+  if(allDone) return;
+  $("#gsList").innerHTML = steps.map(([n,done])=>`
+    <div class="gs-item">
+      <span class="check-btn ${done?"done":""}">${done?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 7"/></svg>':""}</span>
+      <span style="${done?"color:var(--ink-3);text-decoration:line-through":""}">${n}</span>
+    </div>`).join("");
+}
+
+/* ================= Onboarding ================= */
+let obConditions = [], obMedsModeV = "Oral medication", obUnitV = "mgdl";
+function obShow(step){
+  $$(".ob-step").forEach(s=>s.classList.toggle("active", +s.dataset.step === step));
+  $$(".ob-dots span").forEach((d,i)=>d.classList.toggle("on", i <= step));
+}
+$("#obAgree").addEventListener("change", e=>{
+  $("#obStart").disabled = !e.target.checked;
+  $("#obStart").style.opacity = e.target.checked ? "1" : ".5";
+});
+$("#obStart").addEventListener("click", ()=>obShow(1));
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-obgo]");
+  if(b) obShow(+b.dataset.obgo);
+});
+$("#obConds").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  b.classList.toggle("active");
+  obConditions = $$("#obConds button.active").map(x=>x.dataset.v);
+});
+$("#obMedsMode").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  obMedsModeV = b.dataset.v;
+  $$("#obMedsMode button").forEach(x=>x.classList.toggle("active",x===b));
+});
+$("#obUnit").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  obUnitV = b.dataset.v;
+  $$("#obUnit button").forEach(x=>x.classList.toggle("active",x===b));
+});
+$("#obFinish").addEventListener("click", ()=>{
+  const s = state.settings;
+  s.name = $("#obName").value.trim();
+  s.age = parseInt($("#obAge").value,10) || null;
+  s.gender = $("#obGender").value;
+  s.height = parseFloat($("#obHeight").value) || null;
+  s.diaType = $("#obDiaType").value;
+  s.conditions = obConditions;
+  s.medsMode = obMedsModeV;
+  s.unit = obUnitV;
+  s.stepGoal = parseInt($("#obSteps").value,10) || 7500;
+  s.onboarded = true;
+  const w = parseFloat($("#obWeight").value);
+  if(!isNaN(w) && w > 0) state.vitals.push({id:uid(), ts:Date.now(), type:"weight", v1:+w.toFixed(1)});
+  save(); $("#onboard").classList.remove("show"); renderAll();
+  toast("Welcome" + (s.name ? ", " + s.name : "") + "! Your app is ready 🎉");
+});
+
+/* ================= Native bridge (Android app) ================= */
+const NATIVE = typeof window.Android !== "undefined" && window.Android;
+if(NATIVE){
+  $("#voiceBtn").hidden = false;
+  $("#hcSync").hidden = false;
+  $("#remNote").textContent = "Daily reminder notifications — even when the app is closed.";
+} else {
+  $("#remNote").textContent = "Reminder notifications work in the native Android app version. In the web version these settings are saved but notifications can't fire while the app is closed.";
+}
+
+/* ---- voice logging ---- */
+$("#voiceBtn").addEventListener("click", ()=>{ try{ Android.startVoiceInput(); }catch(e){ toast("Voice input unavailable"); } });
+window.onVoiceResult = function(text){
+  text = (text||"").toLowerCase().trim();
+  if(!text){ toast("Didn't catch that — try again"); return; }
+  const num = (text.match(/(\d+(?:\.\d+)?)/)||[])[1];
+  const setTab = k => { const t = document.querySelector(`[data-logtab="${k}"]`); if(t) t.click(); };
+  nav("log");
+  if(/step/.test(text) && num){
+    state.steps[dayKey(new Date())] = parseInt(num,10);
+    save(); renderSteps(); toast("Steps saved from voice: " + num);
+  } else if(/(walk|run|cycle|gym|exercise|yoga|jog)/.test(text) && num){
+    setTab("activity");
+    $("#aType").value = (text.match(/walk|run|cycle|gym|yoga|jog/)||["Exercise"])[0];
+    $("#aMin").value = num;
+    toast('Heard "' + text + '" — check and tap Save activity');
+  } else if(/carb|ate|meal|lunch|dinner|breakfast|snack/.test(text)){
+    setTab("meal");
+    $("#mName").value = text.replace(/log|add|ate|i had/g,"").trim();
+    if(num) $("#mCarbs").value = num;
+    toast('Heard "' + text + '" — check and tap Save meal');
+  } else if(num){
+    setTab("glucose");
+    $("#gValue").value = num;
+    toast('Heard glucose ' + num + ' — check context and tap Save');
+  } else {
+    toast('Heard "' + text + '" — say a number, e.g. "sugar 145"');
+  }
+};
+
+/* ---- Health Connect steps sync ---- */
+$("#hcSync").addEventListener("click", ()=>{ try{ Android.syncHealthConnectSteps(); toast("Asking Health Connect…"); }catch(e){ toast("Health Connect unavailable"); } });
+window.onStepsSynced = function(n){
+  n = parseInt(n,10);
+  if(isNaN(n) || n < 0){ toast("Health Connect: no step data found"); return; }
+  state.steps[dayKey(new Date())] = n;
+  save(); renderSteps(); renderGettingStarted();
+  toast("Synced " + n.toLocaleString() + " steps from your watch ⌚");
+};
+window.onNativeMessage = function(msg){ toast(msg); };
+
+/* ---- meal photo ---- */
+let mealPhotoData = null;
+$("#mPhoto").addEventListener("change", e=>{
+  const f = e.target.files[0];
+  if(!f){ mealPhotoData = null; return; }
+  const img = new Image();
+  img.onload = ()=>{
+    const c = document.createElement("canvas");
+    const scale = Math.min(1, 320 / Math.max(img.width, img.height));
+    c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    mealPhotoData = c.toDataURL("image/jpeg", 0.7);
+    toast("Photo attached 📷");
+  };
+  img.onerror = ()=>{ mealPhotoData = null; toast("Couldn't read that photo"); };
+  img.src = URL.createObjectURL(f);
+});
+
+/* ---- AI features ---- */
+async function aiAsk(system, user){
+  const key = state.settings.aiKey;
+  if(!key){ toast("Add your Anthropic API key in Settings → AI features first"); nav("settings"); return null; }
+  try{
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        "x-api-key": key,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      body: JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:600, system,
+        messages:[{role:"user", content:user}] })
+    });
+    if(!res.ok){ toast("AI request failed (" + res.status + ") — check your key"); return null; }
+    const data = await res.json();
+    return (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
+  }catch(e){ toast("AI request failed — check internet"); return null; }
+}
+$("#saveAiKey").addEventListener("click", ()=>{
+  state.settings.aiKey = $("#aiKey").value.trim();
+  save(); toast(state.settings.aiKey ? "AI key saved ✨" : "AI key removed");
+});
+$("#aiCarb").addEventListener("click", async e=>{
+  e.preventDefault();
+  const name = $("#mName").value.trim();
+  if(!name){ toast("Describe the meal first"); $("#mName").focus(); return; }
+  toast("Estimating carbs…");
+  const out = await aiAsk(
+    "You estimate carbohydrate content of meals for a person with diabetes. Reply with ONLY a number: total grams of carbohydrate for the described portion. No words, no units, no ranges — one integer.",
+    "Meal: " + name);
+  if(out === null) return;
+  const n = parseInt((out.match(/\d+/)||[])[0],10);
+  if(isNaN(n)){ toast("Couldn't estimate — enter carbs manually"); return; }
+  $("#mCarbs").value = n;
+  toast("AI estimate: ~" + n + " g carbs (verify before saving)");
+});
+$("#aiAsk").addEventListener("click", async ()=>{
+  const q = $("#aiQ").value.trim();
+  if(!q){ toast("Type a question first"); return; }
+  $("#aiA").textContent = "Thinking…";
+  const out = await aiAsk(
+    "You are a friendly diabetes education assistant inside the GlucoGuide app. Give short, practical, evidence-based answers about diabetes, food, exercise, and self-care. Never give medication dosing advice. Always remind the user to confirm important decisions with their care team when relevant. Keep answers under 150 words.",
+    q);
+  $("#aiA").textContent = out || "";
+  if(out === null) $("#aiA").textContent = "";
+});
+
+/* ---- reminders ---- */
+const REM_DEFS = {
+  remGlucose:{id:101, h:6,  m:0,  title:"Morning glucose check", msg:"Check your fasting glucose and drink water 💧"},
+  remPregym: {id:102, h:17, m:45, title:"Pre-gym safety check", msg:"Check glucose and hydrate before your 6 PM workout 🏋️"},
+  remSaveDay:{id:103, h:21, m:30, title:"Save today's record", msg:"Open GlucoGuide and save today's plan record ✅"}
+};
+function applyReminders(){
+  if(!NATIVE) return;
+  const r = state.settings.reminders || {};
+  try{
+    Object.entries(REM_DEFS).forEach(([k,d])=>{
+      if(r[k]) Android.scheduleReminder(d.id, d.h, d.m, d.title, d.msg);
+      else Android.cancelReminder(d.id);
+    });
+    // medication reminders ids 110+
+    for(let i=0;i<10;i++) Android.cancelReminder(110+i);
+    if(r.remMeds){
+      let i = 0;
+      state.meds.forEach(med => med.times.forEach(t => {
+        if(i >= 10) return;
+        const [h,m] = t.split(":").map(Number);
+        Android.scheduleReminder(110+i, h, m, "Medication: " + med.name, "Time to take " + (med.dose || med.name) + " 💊");
+        i++;
+      }));
+    }
+  }catch(e){ /* bridge error */ }
+}
+["remGlucose","remMeds","remPregym","remSaveDay"].forEach(k=>{
+  $("#"+k).addEventListener("change", e=>{
+    state.settings.reminders = state.settings.reminders || {};
+    state.settings.reminders[k] = e.target.checked;
+    if(NATIVE && e.target.checked){ try{ Android.requestNotificationPermission(); }catch(err){} }
+    save(); applyReminders();
+    toast(e.target.checked ? "Reminder on" : "Reminder off");
+  });
+});
+function renderReminders(){
+  const r = state.settings.reminders || {};
+  ["remGlucose","remMeds","remPregym","remSaveDay"].forEach(k=>{ $("#"+k).checked = !!r[k]; });
+}
+
+/* ================= Doctor report ================= */
+$("#doctorReport").addEventListener("click", ()=>{
+  const days = 90;
+  const rs = readingsSince(days), vals = rs.map(r=>r.mg);
+  const {c, total} = tirCounts(days);
+  const p = k => total ? Math.round(100*c[k]/total) : 0;
+  const a = avg(vals), sd = stdev(vals);
+  const lows = rs.filter(r=>r.mg < state.settings.low).length;
+  const veryHigh = rs.filter(r=>r.mg > 250).length;
+  const ctxs = ["Fasting","Before meal","After meal","Bedtime","Night","Other"];
+  const ctxRows = ctxs.map(cx=>{
+    const sub = rs.filter(r=>r.context===cx);
+    return sub.length ? `<tr><td>${cx}</td><td>${fmtG(avg(sub.map(r=>r.mg)),true)}</td><td>${sub.length}</td></tr>` : "";
+  }).join("");
+  const recs = Object.entries(state.dayRecords).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,21);
+  const adhAvg = recs.length ? Math.round(recs.reduce((s,[,r])=>s+r.pct,0)/recs.length) : null;
+  const w = latestVital("weight"), bp = latestVital("bp"), labA1c = latestVital("a1c");
+  const today = new Date().toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
+
+  $("#printReport").innerHTML = `
+    <h1>GlucoGuide — Diabetes Self-Management Report</h1>
+    <p class="meta">Patient: <b>${esc(state.settings.name||"—")}</b> · ${esc(state.settings.diaType)}${state.settings.age?" · "+state.settings.age+" y":""}${state.settings.gender&&state.settings.gender!=="Prefer not to say"?" · "+esc(state.settings.gender):""}${state.settings.height?" · "+state.settings.height+" cm":""} · ${esc(state.settings.medsMode||"")}<br>
+    ${state.settings.conditions&&state.settings.conditions.length?"Other conditions: "+state.settings.conditions.map(esc).join(", ")+"<br>":""}
+    Generated ${today} · Period: last ${days} days<br>
+    Doctor/clinic: ${esc(state.settings.docName||"—")} · Emergency contact: ${esc(state.settings.emName||"—")} ${esc(state.settings.emPhone||"")}<br>
+    Target range: ${fmtG(state.settings.low)}–${fmtG(state.settings.high,true)} · Units: ${unitLabel()}</p>
+
+    <h2>Glucose summary</h2>
+    <table><tr><th>Readings</th><th>Average</th><th>Est. A1C (GMI)</th><th>SD</th><th>CV</th><th>Below range</th><th>Above 250 mg/dL</th></tr>
+    <tr><td>${vals.length}</td><td>${vals.length?fmtG(a,true):"—"}</td><td>${vals.length>=5?eA1c(a).toFixed(1)+"% (estimate)":"—"}</td>
+    <td>${vals.length>1?fmtG(sd):"—"}</td><td>${vals.length>1&&a?Math.round(100*sd/a)+"%":"—"}</td><td>${lows}</td><td>${veryHigh}</td></tr></table>
+
+    <h2>Time in range</h2>
+    <table><tr><th>In range</th><th>Above range</th><th>Below range</th></tr>
+    <tr><td>${p("in")}% (${c.in})</td><td>${p("high")}% (${c.high})</td><td>${p("low")}% (${c.low})</td></tr></table>
+
+    ${ctxRows ? `<h2>Average by context</h2><table><tr><th>Context</th><th>Average</th><th>Readings</th></tr>${ctxRows}</table>` : ""}
+
+    <h2>Medications (self-reported)</h2>
+    ${state.meds.length ? `<table><tr><th>Name</th><th>Type</th><th>Dose</th><th>Schedule</th></tr>${state.meds.map(m=>`<tr><td>${esc(m.name)}</td><td>${esc(m.type)}</td><td>${esc(m.dose||"—")}</td><td>${m.times.join(", ")||"—"}</td></tr>`).join("")}</table>` : `<p>None recorded.</p>`}
+
+    <h2>Latest vitals</h2>
+    <table><tr><th>Weight</th><th>Blood pressure</th><th>HbA1c (lab)</th></tr>
+    <tr><td>${w?w.v1+" kg ("+new Date(w.ts).toLocaleDateString()+")":"—"}</td>
+    <td>${bp?bp.v1+"/"+bp.v2+" mmHg ("+new Date(bp.ts).toLocaleDateString()+")":"—"}</td>
+    <td>${labA1c?labA1c.v1+"% ("+new Date(labA1c.ts).toLocaleDateString()+")":"—"}</td></tr></table>
+
+    <h2>Lab results (latest of each type, self-entered)</h2>
+    ${(()=>{ const latest={}; state.labs.slice().sort((a,b)=>a.ts-b.ts).forEach(l=>latest[l.type]=l);
+      const items=Object.values(latest);
+      return items.length ? `<table><tr><th>Test</th><th>Result</th><th>Date</th></tr>` +
+        items.map(l=>{const[n,u]=LAB_TYPES[l.type]||[l.type,""];return `<tr><td>${esc(n)}</td><td>${l.value} ${u}</td><td>${new Date(l.ts).toLocaleDateString()}</td></tr>`;}).join("") + `</table>`
+      : `<p>None recorded.</p>`; })()}
+
+    <h2>Activity</h2>
+    ${(()=>{ let sum=0,daysN=0; for(let d=0;d<30;d++){const n=stepsFor(dayKey(new Date(Date.now()-d*864e5))); if(n){sum+=n;daysN++;}}
+      return `<p class="meta">Steps (last 30 days): ${daysN? "average "+Math.round(sum/daysN).toLocaleString()+" steps/day across "+daysN+" tracked day(s); goal "+stepGoal().toLocaleString() : "not tracked"}.</p>`; })()}
+
+    <h2>Lifestyle plan adherence (7-day vegetarian meal + gym plan)</h2>
+    ${recs.length ? `<p class="meta">Average adherence across ${recs.length} saved day(s): <b>${adhAvg}%</b></p>
+    <table><tr><th>Date</th><th>Day</th><th>Adherence</th><th>Items not followed</th><th>Note</th></tr>
+    ${recs.map(([d,r])=>`<tr><td>${d}</td><td>${r.day}</td><td>${r.pct}% (${r.done}/${r.total})</td><td>${r.missed.concat(r.skipped).map(esc).join(", ")||"—"}</td><td>${esc(r.note||"")}</td></tr>`).join("")}</table>` : `<p>No saved day records yet.</p>`}
+
+    <p class="meta" style="margin-top:14px">Generated by GlucoGuide, a patient self-tracking tool. Values are self-reported; estimated A1C is calculated from average glucose and is not a lab result. Data is stored only on the patient's device.</p>`;
+  window.print();
+});
+
+/* ================= Backup & restore ================= */
+$("#exportJson").addEventListener("click", ()=>{
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 1)], {type:"application/json"}));
+  a.download = "glucoguide-backup-" + dayKey(new Date()) + ".json";
+  a.click(); URL.revokeObjectURL(a.href);
+  toast("Backup downloaded — keep it somewhere safe");
+});
+$("#importJson").addEventListener("click", ()=> $("#importFile").click());
+$("#importFile").addEventListener("change", e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      if(!data || typeof data !== "object" || !("readings" in data)) throw new Error("not a GlucoGuide backup");
+      state = Object.assign(state, data);
+      state.settings = Object.assign({name:"",diaType:"Type 2",unit:"mgdl",low:70,high:180}, data.settings||{});
+      ["readings","meds","doses","meals","activities","vitals","labs"].forEach(k=>{ if(!Array.isArray(state[k])) state[k]=[]; });
+      state.taken = data.taken||{}; state.planLog = data.planLog||{}; state.dayRecords = data.dayRecords||{}; state.steps = data.steps||{};
+      save(); renderAll(); toast("Backup restored ✓");
+    }catch(err){ toast("That file isn't a valid GlucoGuide backup"); }
+    e.target.value = "";
+  };
+  reader.readAsText(f);
+});
+
+/* ================= Persistent storage (keep data forever) ================= */
+async function requestPersistence(){
+  const el = $("#persistNote");
+  try{
+    if(navigator.storage && navigator.storage.persist){
+      const already = await navigator.storage.persisted();
+      const granted = already || await navigator.storage.persist();
+      el.textContent = granted
+        ? "Permanent storage: ON — the browser has promised not to auto-delete this app's data."
+        : "Permanent storage: requested. Tip: keeping the app installed on your home screen makes Chrome treat its data as protected.";
+    }
+  }catch(e){ /* unsupported browser */ }
+}
+
+/* ================= Master render ================= */
+function renderHeader(){
+  const name = state.settings.name;
+  const h = new Date().getHours();
+  const part = h<12 ? "Good morning" : h<18 ? "Good afternoon" : "Good evening";
+  $("#greeting").textContent = part + (name ? ", " + name : "");
+  const ds = new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+  $("#dashDate").textContent = ds;
+  $("#topDate").textContent = new Date().toLocaleDateString(undefined,{month:"short",day:"numeric"});
+}
+function renderAll(){
+  renderHeader();
+  renderReadout();
+  renderAlert();
+  renderTIR();
+  renderTodayStats();
+  $("#miniChart").innerHTML = lineChart(7, 220);
+  $("#chartHint").textContent = "target band shaded";
+  renderEntryLists();
+  renderMeds();
+  renderChecklists();
+  renderTrends();
+  renderSettings();
+  renderPlan();
+  renderDashPlan();
+  renderDashDayReport();
+  renderVitalsStats();
+  renderLabsLatest();
+  renderSteps();
+  renderGettingStarted();
+  renderAdherence();
+  resetDates();
+}
+
+initLabSelect();
+load().then(()=>{
+  renderAll();
+  requestPersistence();
+  applyReminders();
+  if(!state.settings.onboarded){
+    $("#obName").value = state.settings.name || "";
+    $("#onboard").classList.add("show");
+  }
+});
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
